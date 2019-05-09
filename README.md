@@ -1,13 +1,12 @@
-﻿# nadpis
+# nadpis 
 ## Další nadpis
 # emulator
-něco dalšího 
 teď to můžete přečíst.
-- seznam
+- seznam:
   - podseznam 1
   - položka 4
   - 2
   - 3
-něco zajímavého 
-něco
-thht
+
+ Něco opravdu a skutečně zajímavého.
+ 
