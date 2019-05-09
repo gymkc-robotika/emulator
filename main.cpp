@@ -39,7 +39,8 @@ class MBot {
   void move(double dt) {
     // TODO: inertia / acceleration
     double speed = (motorR->speed + motorL->speed) * 0.001;
-    double headingChange = (motorR->speed - motorL->speed) * 0.1;
+    double turnCoef = 0.01;
+    double headingChange = (motorR->speed - motorL->speed) * turnCoef;
 
     heading += headingChange * dt;
 
