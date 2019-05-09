@@ -1,7 +1,7 @@
-# nadpis
+﻿# nadpis 
 ## Další nadpis
 # emulator
-něco dalšího 
+něco dalšího :)
 teď to můžete přečíst.
 - seznam
   - podseznam 1
