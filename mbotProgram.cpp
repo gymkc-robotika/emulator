@@ -10,6 +10,8 @@ MeDCMotor motor_10(10);
 MeRGBLed rgbled_7(7, 7 == 7 ? 2 : 4);
 MeLineFollower linefollower_2(2);
 
+MeUltrasonicSensor ultrasonic_3(3);
+
 void motorRL(int l, int r) {
 	motor_9.run((9) == M1 ? -(l) : (l));
 	motor_10.run((10) == M1 ? -(r) : (r));
@@ -21,10 +23,11 @@ enum State {
 	Init,
 	Following,
 	Reverse,
+	Collision
 };
 
 State state = Init;
-
+long collisionTime;
 
 void doInit() {
 	start = millis();
@@ -38,6 +41,19 @@ void setup() {
 
 void loop() {
 	int line = linefollower_2.readSensors();
+	int dist = ultrasonic_3.distanceCm();
+
+	if (dist < 5) {
+		state = Collision;
+		collisionTime = millis();
+		motorRL(-80, -90);
+	}
+
+	if (state == Collision) {
+		if (millis() > collisionTime + 3000) {
+			doInit();
+		}
+	}
 	if (state == Init) {
 		if (line != 0) {
 			motorRL(150, 150);
