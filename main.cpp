@@ -1,6 +1,6 @@
 #include <iostream>
 #include <cmath>
-
+#include "mBotEmul.h"
 
 #define M1 0
 
@@ -55,24 +55,29 @@ void loop();
 
 void setup();
 
-int emulCmdMain() {
-// forward declare motors
-  extern MeDCMotor motor_9;
-  extern MeDCMotor motor_10;
-  MBot bot = MBot(&motor_9, &motor_10);
-  printf("Emulator started - coordinates %.3f,%.3f\n", bot.x, bot.y);
-  double dt = 0.1;
-  setup();
-  printf("Setup done\n");
-  for (int i = 0; i < 1000; i++) {
-    loop();
-    bot.move(dt);
-    if ((i % 50)==0) {
-      printf("Position %.3f,%.3f\n", bot.x, bot.y);
-    }
-  }
-  printf("Final bot coordinates %.3f,%.3f\n", bot.x, bot.y);
-  return 0;
+extern MeDCMotor motor_9;
+extern MeDCMotor motor_10;
+MBot bot = MBot(&motor_9, &motor_10);
+
+mBotVisual getVisual() {
+   mBotVisual visual;
+   visual.x = bot.x;
+   visual.y = bot.y;
+   visual.heading = bot.heading;
+   return visual;
+}
+
+mBotVisual emulatorSetup() {
+   printf("Emulator started - coordinates %.3f,%.3f\n", bot.x, bot.y);
+   setup();
+   printf("Setup done\n");
+   return getVisual();
+}
+
+mBotVisual emulatorLoop(double dt) {
+   loop();
+   bot.move(dt);
+   return getVisual();
 }
 
 MeDCMotor motor_9(9);

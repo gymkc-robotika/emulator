@@ -5,8 +5,9 @@
 */
 
 #include <windows.h>
+#include "mBotEmul.h"
 
-static char g_szClassName[] = "MyWindowClass";
+static char g_szClassName[] = "mBotEmulatorWindowClass";
 static HINSTANCE g_hInst = NULL;
 
 const UINT idTimer1 = 1;
@@ -15,37 +16,19 @@ UINT nTimerDelay = 10;
 HBITMAP hbmBall, hbmMask;
 BITMAP bm;
 
-int ballX, ballY;
-int deltaX, deltaY;
-
 int deltaValue = 200;
 
-void EraseBall(HDC hdc)
-{
-   RECT rc;
-   rc.left = ballX;
-   rc.top = ballY;
-   rc.right = ballX + bm.bmWidth;
-   rc.bottom = ballY + bm.bmHeight;
-   FillRect(hdc, &rc, (HBRUSH)(COLOR_BTNFACE+1));
-}
-
-void DrawBall(HDC hdc)
-{
-   HDC hdcMemory;
-   hdcMemory = CreateCompatibleDC(hdc);
-
-   SelectObject(hdcMemory, hbmMask);
-   BitBlt(hdc, ballX, ballY, bm.bmWidth, bm.bmHeight, hdcMemory, 0, 0, SRCAND);
-
-   SelectObject(hdcMemory, hbmBall);
-   BitBlt(hdc, ballX, ballY, bm.bmWidth, bm.bmHeight, hdcMemory, 0, 0, SRCPAINT);
-
-   DeleteDC(hdcMemory);
-}
 
 LONG lastTime;
 bool lastTimeSet = false;
+
+struct BallScreenPos {
+	int x, y;
+};
+
+mBotVisual visual;
+BallScreenPos lastBall;
+boolean lastBallSet = false;
 
 void UpdateBall(HWND hwnd)
 {
@@ -58,29 +41,54 @@ void UpdateBall(HWND hwnd)
 	lastTime = now;
 	
 	double dt = deltaT / 1000.0;
-	
+	visual = emulatorLoop(dt);
+}
+
+BallScreenPos computeScreenPos(HWND hwnd, mBotVisual visual) {
    RECT rc;
    GetClientRect(hwnd, &rc);
 
-   ballX += deltaX * dt;
-   ballY += deltaY * dt;
+	int width = rc.right - rc.left;
+	int height = rc.bottom - rc.top;
+	
+	int ballX = width / 2 + int(visual.x * 200);
+	int ballY = height / 2 + int(visual.y * 200);
+	BallScreenPos pos;
+	pos.x = ballX;
+	pos.y = ballY;
+	return pos;
+}
+void EraseBall(HWND hwnd, HDC hdc)
+{
+   if (!lastBallSet) return;
+   
+	BallScreenPos pos = lastBall;
+	
+   RECT rc;
+   rc.left = pos.x;
+   rc.top = pos.y;
+   rc.right = pos.x + bm.bmWidth;
+   rc.bottom = pos.y + bm.bmHeight;
+   FillRect(hdc, &rc, (HBRUSH)(COLOR_BTNFACE+1));
+}
 
-   if(ballX < 0){
-      ballX = 0;
-      deltaX = deltaValue;
-   }
-   else if(ballX + bm.bmWidth > rc.right){
-      ballX = rc.right - bm.bmWidth;
-      deltaX = -deltaValue;
-   }
-   if(ballY < 0){
-      ballY = 0;
-      deltaY = deltaValue;
-   }
-   else if(ballY + bm.bmHeight > rc.bottom){
-      ballY = rc.bottom - bm.bmHeight;
-      deltaY = -deltaValue;
-   }
+void DrawBall(HWND hwnd, HDC hdc)
+{
+	BallScreenPos pos = computeScreenPos(hwnd, visual);
+	
+	lastBall = pos;
+	lastBallSet = true;
+	
+   HDC hdcMemory;
+   hdcMemory = CreateCompatibleDC(hdc);
+
+   SelectObject(hdcMemory, hbmMask);
+   BitBlt(hdc, pos.x, pos.y, bm.bmWidth, bm.bmHeight, hdcMemory, 0, 0, SRCAND);
+
+   SelectObject(hdcMemory, hbmBall);
+   BitBlt(hdc, pos.x, pos.y, bm.bmWidth, bm.bmHeight, hdcMemory, 0, 0, SRCPAINT);
+
+   DeleteDC(hdcMemory);
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
@@ -88,6 +96,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
    switch(Message)
    {
       case WM_CREATE:
+      
+         visual = emulatorSetup();
+		
          hbmBall = LoadBitmap(g_hInst, "BALLBMP");
          hbmMask = LoadBitmap(g_hInst, "MASKBMP");
          if(!hbmBall || !hbmMask){
@@ -99,10 +110,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
          GetObject(hbmBall, sizeof(bm), &bm);
          SetTimer(hwnd, idTimer1, nTimerDelay, NULL);
 
-         ballX = 0;
-         ballY = 0;
-         deltaX = deltaValue;
-         deltaY = deltaValue;
 
       break;
       case WM_TIMER:
@@ -111,9 +118,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
             HDC hdcWindow;
             hdcWindow = GetDC(hwnd);
 
-            EraseBall(hdcWindow);
+            EraseBall(hwnd, hdcWindow);
             UpdateBall(hwnd);
-            DrawBall(hdcWindow);
+            DrawBall(hwnd, hdcWindow);
 
             ReleaseDC(hwnd, hdcWindow);
          }
@@ -125,7 +132,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
             HDC hdcWindow;
             hdcWindow = BeginPaint(hwnd, &ps);
 
-            DrawBall(hdcWindow);
+            DrawBall(hwnd, hdcWindow);
             
             EndPaint(hwnd, &ps);
          }
