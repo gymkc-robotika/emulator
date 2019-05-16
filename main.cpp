@@ -80,6 +80,11 @@ MBotPos emulatorLoop(double dt) {
 	return getVisual();
 }
 
+void placeMBot(int xPos, int yPos) {
+	bot.pos.x = xPos;
+	bot.pos.y = yPos;
+}
+
 
 void MeRGBLed::setColor(int leftRight, int r, int g, int b) {
 	{

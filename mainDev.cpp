@@ -13,6 +13,7 @@
 #include "mBotEmul.h"
 #include <string>
 #include <memory>
+#include <windowsx.h>
 
 static char g_szClassName[] = "mBotEmulatorWindowClass";
 static HINSTANCE g_hInst = NULL;
@@ -124,7 +125,7 @@ double RoomRayCast(Pos beg, Pos end) {
 	double dist = end.dist(beg);
 
 	double pixel = PixelSize();
-	int pixels = (int)ceil(dist / pixel);
+	int pixels = (int) ceil(dist / pixel);
 	Pos pos = beg;
 	Pos step = (end - beg) / pixels;
 	for (int i = 0; i <= pixels; i++, pos += step) {
@@ -138,6 +139,8 @@ double RoomRayCast(Pos beg, Pos end) {
 
 
 LONG simulatedTime = 0;
+
+bool buttonL = false;
 
 long millis() {
 	return simulatedTime;
@@ -167,10 +170,14 @@ void UpdateBall() {
 
 COLORREF DisplaySensor(RoomColor roomColor) {
 	switch (roomColor) {
-		case RoomWhite: return RGB(200, 150, 0);
-		case RoomBlack: return RGB(0, 255, 0);
-		case RoomWall: return RGB(0, 0, 255);
-		default: return RGB(0, 0, 0);
+		case RoomWhite:
+			return RGB(200, 150, 0);
+		case RoomBlack:
+			return RGB(0, 255, 0);
+		case RoomWall:
+			return RGB(0, 0, 255);
+		default:
+			return RGB(0, 0, 0);
 	}
 }
 
@@ -277,10 +284,26 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			break;
 		case WM_KEYDOWN:
-			if(wParam == VK_SHIFT) accelerate = true;
+			if (wParam == VK_SHIFT) accelerate = true;
 			break;
 		case WM_KEYUP:
-			if(wParam == VK_SHIFT) accelerate = false;
+			if (wParam == VK_SHIFT) accelerate = false;
+			break;
+		case WM_LBUTTONDOWN:
+			buttonL = true;
+			break;
+		case WM_LBUTTONUP: {
+			int xPos = GET_X_LPARAM(lParam);
+			int yPos = GET_Y_LPARAM(lParam);
+
+			placeMBot(int((xPos - 400)* PixelSize()), int((yPos - 300) * PixelSize()));
+			buttonL = false;
+			break;
+		}
+		case WM_MOUSEMOVE:
+			if (buttonL) {
+				// TODO: drag with mouse - adjust heading
+			}
 			break;
 
 		case WM_TIMER:

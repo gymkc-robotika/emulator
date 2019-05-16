@@ -85,6 +85,8 @@ MBotPos emulatorSetup();
 
 MBotPos emulatorLoop(double dt);
 
+void placeMBot(int xPos, int yPos);
+
 RoomColor GetRoomColor(Pos pos);
 
 double RoomRayCast(Pos beg, Pos end);
