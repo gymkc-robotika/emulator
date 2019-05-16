@@ -18,7 +18,7 @@ BITMAP bm;
 int ballX, ballY;
 int deltaX, deltaY;
 
-int deltaValue = 4;
+int deltaValue = 200;
 
 void EraseBall(HDC hdc)
 {
@@ -44,13 +44,26 @@ void DrawBall(HDC hdc)
    DeleteDC(hdcMemory);
 }
 
+LONG lastTime;
+bool lastTimeSet = false;
+
 void UpdateBall(HWND hwnd)
 {
+	LONG now = GetTickCount();
+	LONG deltaT = now - lastTime;
+	if (!lastTimeSet) {
+		deltaT = 0;
+		lastTimeSet = true;
+	}
+	lastTime = now;
+	
+	double dt = deltaT / 1000.0;
+	
    RECT rc;
    GetClientRect(hwnd, &rc);
 
-   ballX += deltaX;
-   ballY += deltaY;
+   ballX += deltaX * dt;
+   ballY += deltaY * dt;
 
    if(ballX < 0){
       ballX = 0;
