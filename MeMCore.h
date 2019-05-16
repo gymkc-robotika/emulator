@@ -1,6 +1,7 @@
 #ifndef MEM_CORE_H
 #define MEM_CORE_H
 
+#include <math.h>
 
 #define M1 0
 
@@ -16,6 +17,13 @@ class MeDCMotor {
 
 	void run(int s) {
 		speed = s;
+	}
+
+	int effectiveSpeed() const {
+		if (abs(speed) < 80) return 0;
+		if (speed > 255) return 255;
+		if (speed < - 255) return -255;
+		return speed;
 	}
 };
 
