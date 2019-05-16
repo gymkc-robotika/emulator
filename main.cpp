@@ -9,8 +9,6 @@ class MBot : public MBotPos {
 	MeDCMotor *motorR;
 	MeDCMotor *motorL;
 
-	RoomColor sensorLeft = RoomWhite, sensorRight = RoomWhite;
-
 	public:
 	MBot(MeDCMotor *rm, MeDCMotor *lm) {
 		motorR = rm;
@@ -21,10 +19,6 @@ class MBot : public MBotPos {
 	double speedX = 0, speedY = 0;
 
 	void move(double dt);
-
-	RoomColor SensorLColor() {return sensorLeft;}
-	RoomColor SensorRColor() {return sensorRight;}
-
 };
 
 void MBot::move(double dt) {
@@ -46,8 +40,8 @@ void MBot::move(double dt) {
 MBot bot = MBot(&motor_9, &motor_10);
 
 int MeLineFollower::readSensors() {
-	RoomColor colorR = bot.SensorLColor();
-	RoomColor colorL = bot.SensorRColor();
+	RoomColor colorR = bot.sensorLeft;
+	RoomColor colorL = bot.sensorRight;
 	int ret = 0;
 	if (colorR == RoomBlack) ret += 1;
 	if (colorL == RoomBlack) ret += 2;

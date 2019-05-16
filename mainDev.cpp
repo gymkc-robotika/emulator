@@ -139,6 +139,15 @@ POINT ScreenPos(Pos pos) {
 	return p;
 }
 
+COLORREF DisplaySensor(RoomColor roomColor) {
+	switch (roomColor) {
+		case RoomWhite: return RGB(200, 150, 0);
+		case RoomBlack: return RGB(0, 255, 0);
+		case RoomWall: return RGB(0, 0, 255);
+		default: return RGB(0, 0, 0);
+	}
+}
+
 void DrawBall(HWND hwnd, HDC hdc) {
 	// based on https://docs.microsoft.com/en-us/previous-versions/ms969905(v=msdn.10)
 	RECT rc;
@@ -166,9 +175,9 @@ void DrawBall(HWND hwnd, HDC hdc) {
 
 	double botScale = 0.1;
 
-	auto drawLine = [=](COLORREF color, double bx, double by, double ex, double ey) {
+	auto drawLine = [=](COLORREF color, double bx, double by, double ex, double ey, int lineWidth = 3) {
 		// Draw a red line
-		HPEN hLinePen = CreatePen(PS_SOLID, 3, color);
+		HPEN hLinePen = CreatePen(PS_SOLID, lineWidth, color);
 		HPEN hPenOld = (HPEN) SelectObject(hdcMemory, hLinePen);
 
 		POINT pos = ScreenPos(visual.local(botScale * bx, botScale * by));
@@ -183,6 +192,9 @@ void DrawBall(HWND hwnd, HDC hdc) {
 
 	drawLine(RGB(100, 200, 0), 0, -1, 0, +1);
 	drawLine(RGB(128, 0, 0), 0.3, -1, -0.3, -1);
+
+	drawLine(DisplaySensor(visual.sensorLeft), +0.3, +1, +0.3, +1, 5);
+	drawLine(DisplaySensor(visual.sensorRight), -0.3, +1, -0.3, +1, 5);
 
 	BitBlt(hdc,
 			 rc.left, rc.top,

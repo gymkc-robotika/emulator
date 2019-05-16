@@ -8,11 +8,16 @@ struct Pos {
 
 	Pos(double x = 0, double y = 0):x(x),y(y){}
 };
+enum RoomColor {
+	RoomWhite, RoomBlack, RoomWall
+};
+
 
 struct MBotPos {
 	// coordinates
 	Pos pos;
 	double heading = 0;
+	RoomColor sensorLeft = RoomWhite, sensorRight = RoomWhite;
 
 	Pos local(double x, double y) {
 		double sh = sin(heading);
@@ -26,10 +31,6 @@ struct MBotPos {
 MBotPos emulatorSetup();
 
 MBotPos emulatorLoop(double dt);
-
-enum RoomColor {
-	RoomWhite, RoomBlack, RoomWall
-};
 
 RoomColor GetRoomColor(Pos pos);
 
