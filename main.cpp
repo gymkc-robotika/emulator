@@ -56,9 +56,7 @@ mBotVisual getVisual() {
 }
 
 mBotVisual emulatorSetup() {
-   printf("Emulator started - coordinates %.3f,%.3f\n", bot.x, bot.y);
    setup();
-   printf("Setup done\n");
    return getVisual();
 }
 

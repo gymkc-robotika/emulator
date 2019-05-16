@@ -1,4 +1,7 @@
-/* 
+#pragma ide diagnostic ignored "hicpp-use-nullptr"
+#pragma ide diagnostic ignored "modernize-use-nullptr"
+#pragma ide diagnostic ignored "hicpp-signed-bitwise"
+/*
    Name: WinAnim
    Author: Brook Miles
    Description: Making an animation in windows
@@ -17,9 +20,6 @@ const UINT idTimer1 = 1;
 UINT nTimerDelay = 10;
 
 HBITMAP hbmBall, hbmRoom;
-
-int deltaValue = 200;
-
 
 LONG lastTime;
 bool lastTimeSet = false;
@@ -94,7 +94,7 @@ RoomColor GetRoomColor(double x, double y) {
 }
 
 
-void UpdateBall(HWND hwnd)
+void UpdateBall()
 {
 	LONG now = GetTickCount();
 	LONG deltaT = now - lastTime;
@@ -132,9 +132,6 @@ void DrawBall(HWND hwnd, HDC hdc)
    SelectObject(hdcMem, hbmOldBitmap);
    DeleteDC(hdcMem);
    
-	int width = rc.right - rc.left;
-	int height = rc.bottom - rc.top;
-	
 	int ballX = 400 + int(visual.x * 100);
 	int ballY = 300 + int(visual.y * 100);
 	double sh = sin(visual.heading);
@@ -146,10 +143,10 @@ void DrawBall(HWND hwnd, HDC hdc)
       HPEN hLinePen = CreatePen(PS_SOLID, 3, color);
       HPEN hPenOld = (HPEN)SelectObject(hdcMemory, hLinePen);
       
-   	int posX = ballX + ch * botSize * bx + sh * botSize * by;
-   	int posY = ballY - sh * botSize * bx + ch * botSize * by;
-   	int posXE = ballX + ch * botSize * ex + sh * botSize * ey;
-   	int posYE = ballY - sh * botSize * ex + ch * botSize * ey;
+   	int posX = int(ballX + ch * botSize * bx + sh * botSize * by);
+   	int posY = int(ballY - sh * botSize * bx + ch * botSize * by);
+   	int posXE = int(ballX + ch * botSize * ex + sh * botSize * ey);
+   	int posYE = int(ballY - sh * botSize * ex + ch * botSize * ey);
       MoveToEx(hdcMemory, posX, posY, NULL);
       LineTo(hdcMemory, posXE, posYE);
       
@@ -213,7 +210,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
             HDC hdcWindow;
             hdcWindow = GetDC(hwnd);
 
-            UpdateBall(hwnd);
+            UpdateBall();
             DrawBall(hwnd, hdcWindow);
 
             ReleaseDC(hwnd, hdcWindow);
@@ -311,4 +308,3 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
    }
    return Msg.wParam;
 }
-
