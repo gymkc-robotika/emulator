@@ -55,7 +55,7 @@ void loop();
 
 void setup();
 
-int main() {
+int emulCmdMain() {
 // forward declare motors
   extern MeDCMotor motor_9;
   extern MeDCMotor motor_10;
