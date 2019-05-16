@@ -8,6 +8,7 @@
 #include <math.h>
 #include <limits.h>
 #include "mBotEmul.h"
+#include <string>
 
 static char g_szClassName[] = "mBotEmulatorWindowClass";
 static HINSTANCE g_hInst = NULL;
@@ -16,7 +17,6 @@ const UINT idTimer1 = 1;
 UINT nTimerDelay = 10;
 
 HBITMAP hbmBall, hbmRoom;
-BITMAP bm;
 
 int deltaValue = 200;
 
@@ -173,6 +173,20 @@ void DrawBall(HWND hwnd, HDC hdc)
    DeleteDC(hdcMemory);
 }
 
+HBITMAP ReadBitmap(const char *resName, const char *fileName) {
+  HBITMAP hbm = LoadBitmap(g_hInst, resName);
+
+  if (!hbm) {
+    hbm = (HBITMAP) LoadImage( NULL, fileName, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+    if (!hbm) {
+      std::string name = std::string("../") + fileName;
+      hbm = (HBITMAP) LoadImage( NULL, name.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+    }
+  }
+  return hbm;
+
+}
+
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 {
    switch(Message)
@@ -181,15 +195,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
       
          visual = emulatorSetup();
 		
-         hbmBall = LoadBitmap(g_hInst, "BALLBMP");
-         hbmRoom = LoadBitmap(g_hInst, "ROOMBMP");
+         hbmBall = ReadBitmap("BALLBMP", "../ball.bmp");
+         hbmRoom = ReadBitmap("ROOMBMP",  "../room.bmp");
+
          if(!hbmBall || !hbmRoom){
-            MessageBox(hwnd, "Load of resources failed.", "Error",
-               MB_OK | MB_ICONEXCLAMATION);
+            MessageBox(hwnd, "Load of resources failed.", "Error", MB_OK | MB_ICONEXCLAMATION);
             return -1;
          }
 
-         GetObject(hbmBall, sizeof(bm), &bm);
          SetTimer(hwnd, idTimer1, nTimerDelay, NULL);
 
 
