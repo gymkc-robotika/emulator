@@ -60,25 +60,29 @@ void DrawBall(HWND hwnd, HDC hdc)
 	
 	int ballX = width / 2 + int(visual.x * 200);
 	int ballY = height / 2 + int(visual.y * 200);
-	double sx = sin(visual.heading);
-	double cx = cos(visual.heading);
-	int ballSize = 40;
-	int posX = ballX - sx * ballSize / 2;
-	int posY = ballY - cx * ballSize / 2;
-	int posXE = ballX + sx * ballSize / 2;
-	int posYE = ballY + cx * ballSize / 2;
+	double sh = sin(visual.heading);
+	double ch = cos(visual.heading);
+	int ballSize = 20;
+	
+	auto drawLine = [=] (COLORREF color, double bx, double by, double ex, double ey) {
+      // Draw a red line
+      HPEN hLinePen = CreatePen(PS_SOLID, 3, color);
+      HPEN hPenOld = (HPEN)SelectObject(hdcMemory, hLinePen);
+      
+   	int posX = ballX + ch * ballSize * bx + sh * ballSize * by;
+   	int posY = ballY - sh * ballSize * bx + ch * ballSize * by;
+   	int posXE = ballX + ch * ballSize * ex + sh * ballSize * ey;
+   	int posYE = ballY - sh * ballSize * ex + ch * ballSize * ey;
+      MoveToEx(hdcMemory, posX, posY, NULL);
+      LineTo(hdcMemory, posXE, posYE);
+      
+      SelectObject(hdcMemory, hPenOld);
+      DeleteObject(hLinePen);
+   };
 
 
-   // Draw a red line
-   COLORREF qLineColor = RGB(255, 0, 0);
-   HPEN hLinePen = CreatePen(PS_SOLID, 7, qLineColor);
-   HPEN hPenOld = (HPEN)SelectObject(hdcMemory, hLinePen);
-   
-   MoveToEx(hdcMemory, posX, posY, NULL);
-   LineTo(hdcMemory, posXE, posYE);
-   
-   SelectObject(hdcMemory, hPenOld);
-   DeleteObject(hLinePen);
+   drawLine(RGB(255, 0, 0), 0, -1, 0, +1);
+   drawLine(RGB(128, 0, 0), 0.2, -1, -0.2, -1);
 
    BitBlt(hdc,
       rc.left, rc.top,
@@ -188,7 +192,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
    hwnd = CreateWindowEx(
       WS_EX_CLIENTEDGE,
       g_szClassName,
-      "A Bitmap Program",
+      "GymKC Robotika - mBot Emulator",
       WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT, CW_USEDEFAULT, 320, 240,
       NULL, NULL, g_hInst, NULL);
