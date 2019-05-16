@@ -5,6 +5,7 @@
 */
 
 #include <windows.h>
+#include <math.h>
 #include "mBotEmul.h"
 
 static char g_szClassName[] = "mBotEmulatorWindowClass";
@@ -22,13 +23,7 @@ int deltaValue = 200;
 LONG lastTime;
 bool lastTimeSet = false;
 
-struct BallScreenPos {
-	int x, y;
-};
-
 mBotVisual visual;
-BallScreenPos lastBall;
-boolean lastBallSet = false;
 
 void UpdateBall(HWND hwnd)
 {
@@ -44,50 +39,56 @@ void UpdateBall(HWND hwnd)
 	visual = emulatorLoop(dt);
 }
 
-BallScreenPos computeScreenPos(HWND hwnd, mBotVisual visual) {
+void DrawBall(HWND hwnd, HDC hdc)
+{
+   // based on https://docs.microsoft.com/en-us/previous-versions/ms969905(v=msdn.10)
    RECT rc;
    GetClientRect(hwnd, &rc);
+   
+   HBITMAP hbmMem = CreateCompatibleBitmap(hdc, rc.right-rc.left, rc.bottom-rc.top);
+   HDC hdcMemory = CreateCompatibleDC(hdc);
+   HGDIOBJ hbmOld = SelectObject(hdcMemory, hbmMem);
+	
+	// erase background
+   HBRUSH hbrBkGnd = CreateSolidBrush(GetSysColor(COLOR_WINDOW));
+   FillRect(hdcMemory, &rc, hbrBkGnd);
+   DeleteObject(hbrBkGnd);
+
 
 	int width = rc.right - rc.left;
 	int height = rc.bottom - rc.top;
 	
 	int ballX = width / 2 + int(visual.x * 200);
 	int ballY = height / 2 + int(visual.y * 200);
-	BallScreenPos pos;
-	pos.x = ballX;
-	pos.y = ballY;
-	return pos;
-}
-void EraseBall(HWND hwnd, HDC hdc)
-{
-   if (!lastBallSet) return;
+	double sx = sin(visual.heading);
+	double cx = cos(visual.heading);
+	int ballSize = 40;
+	int posX = ballX - sx * ballSize / 2;
+	int posY = ballY - cx * ballSize / 2;
+	int posXE = ballX + sx * ballSize / 2;
+	int posYE = ballY + cx * ballSize / 2;
+
+
+   // Draw a red line
+   COLORREF qLineColor = RGB(255, 0, 0);
+   HPEN hLinePen = CreatePen(PS_SOLID, 7, qLineColor);
+   HPEN hPenOld = (HPEN)SelectObject(hdcMemory, hLinePen);
    
-	BallScreenPos pos = lastBall;
-	
-   RECT rc;
-   rc.left = pos.x;
-   rc.top = pos.y;
-   rc.right = pos.x + bm.bmWidth;
-   rc.bottom = pos.y + bm.bmHeight;
-   FillRect(hdc, &rc, (HBRUSH)(COLOR_BTNFACE+1));
-}
+   MoveToEx(hdcMemory, posX, posY, NULL);
+   LineTo(hdcMemory, posXE, posYE);
+   
+   SelectObject(hdcMemory, hPenOld);
+   DeleteObject(hLinePen);
 
-void DrawBall(HWND hwnd, HDC hdc)
-{
-	BallScreenPos pos = computeScreenPos(hwnd, visual);
-	
-	lastBall = pos;
-	lastBallSet = true;
-	
-   HDC hdcMemory;
-   hdcMemory = CreateCompatibleDC(hdc);
+   BitBlt(hdc,
+      rc.left, rc.top,
+      rc.right-rc.left, rc.bottom-rc.top,
+      hdcMemory,
+      0, 0,
+      SRCCOPY);
 
-   SelectObject(hdcMemory, hbmMask);
-   BitBlt(hdc, pos.x, pos.y, bm.bmWidth, bm.bmHeight, hdcMemory, 0, 0, SRCAND);
-
-   SelectObject(hdcMemory, hbmBall);
-   BitBlt(hdc, pos.x, pos.y, bm.bmWidth, bm.bmHeight, hdcMemory, 0, 0, SRCPAINT);
-
+   SelectObject(hdcMemory, hbmOld);
+   DeleteObject(hdcMemory);
    DeleteDC(hdcMemory);
 }
 
@@ -118,7 +119,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
             HDC hdcWindow;
             hdcWindow = GetDC(hwnd);
 
-            EraseBall(hwnd, hdcWindow);
             UpdateBall(hwnd);
             DrawBall(hwnd, hdcWindow);
 
@@ -136,6 +136,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
             
             EndPaint(hwnd, &ps);
          }
+      break;
+      case WM_ERASEBKGND:
       break;
       case WM_CLOSE:
          DestroyWindow(hwnd);
