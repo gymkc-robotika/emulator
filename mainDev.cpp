@@ -108,10 +108,10 @@ void UpdateBall() {
 	visual = emulatorLoop(dt);
 }
 
-POINT ScreenPos(double x, double y) {
+POINT ScreenPos(Pos pos) {
 	POINT p;
-	p.x = 400 + int(x * 100);
-	p.y = 300 + int(y * 100);
+	p.x = 400 + int(pos.x * 100);
+	p.y = 300 + int(pos.y * 100);
 	return p;
 }
 
@@ -138,23 +138,17 @@ void DrawBall(HWND hwnd, HDC hdc) {
 	SelectObject(hdcMem, hbmOldBitmap);
 	DeleteDC(hdcMem);
 
-	POINT ball = ScreenPos(visual.pos.x, visual.pos.y);
-
-	double sh = sin(visual.heading);
-	double ch = cos(visual.heading);
-	int botSize = 10;
+	double botScale = 0.1;
 
 	auto drawLine = [=](COLORREF color, double bx, double by, double ex, double ey) {
 		// Draw a red line
 		HPEN hLinePen = CreatePen(PS_SOLID, 3, color);
 		HPEN hPenOld = (HPEN) SelectObject(hdcMemory, hLinePen);
 
-		int posX = int(ball.x + ch * botSize * bx + sh * botSize * by);
-		int posY = int(ball.y - sh * botSize * bx + ch * botSize * by);
-		int posXE = int(ball.x + ch * botSize * ex + sh * botSize * ey);
-		int posYE = int(ball.y - sh * botSize * ex + ch * botSize * ey);
-		MoveToEx(hdcMemory, posX, posY, NULL);
-		LineTo(hdcMemory, posXE, posYE);
+		POINT pos = ScreenPos(visual.local(botScale * bx, botScale * by));
+		POINT posE = ScreenPos(visual.local(botScale * ex, botScale * ey));
+		MoveToEx(hdcMemory, pos.x, pos.y, NULL);
+		LineTo(hdcMemory, posE.x, posE.y);
 
 		SelectObject(hdcMemory, hPenOld);
 		DeleteObject(hLinePen);
@@ -162,7 +156,7 @@ void DrawBall(HWND hwnd, HDC hdc) {
 
 
 	drawLine(RGB(100, 200, 0), 0, -1, 0, +1);
-	drawLine(RGB(128, 0, 0), 0.2, -1, -0.2, -1);
+	drawLine(RGB(128, 0, 0), 0.3, -1, -0.3, -1);
 
 	BitBlt(hdc,
 			 rc.left, rc.top,
