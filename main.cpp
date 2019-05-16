@@ -2,23 +2,7 @@
 #include <cmath>
 #include "mBotEmul.h"
 
-#define M1 0
-
-class MeDCMotor {
-  public:
-  int motorNumber;
-  int speed;
-
-  explicit MeDCMotor(int number) {
-    motorNumber = number;
-    speed = 0;
-  }
-
-  void run(int s) {
-    speed = s;
-  }
-};
-
+#include "MeMCore.h"
 
 class MBot {
   MeDCMotor *motorR;
@@ -80,14 +64,4 @@ mBotVisual emulatorLoop(double dt) {
    return getVisual();
 }
 
-MeDCMotor motor_9(9);
-MeDCMotor motor_10(10);
 
-void setup() {
-  motor_9.run((9) == M1 ? -(100) : (100));
-  motor_10.run((10) == M1 ? -(80) : (80));
-}
-
-void loop() {
-
-}

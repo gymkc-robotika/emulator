@@ -25,6 +25,15 @@ bool lastTimeSet = false;
 
 mBotVisual visual;
 
+COLORREF GetRoomColor(int pixelX, int pixelY) {
+   BITMAP bm;
+   GetObject(hbmRoom, sizeof(bm), &bm);
+   bm.bmBits;
+   return 0;
+  
+}
+
+
 void UpdateBall(HWND hwnd)
 {
 	LONG now = GetTickCount();
