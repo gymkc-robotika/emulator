@@ -12,6 +12,7 @@
 #include <limits.h>
 #include "mBotEmul.h"
 #include <string>
+#include <memory>
 
 static char g_szClassName[] = "mBotEmulatorWindowClass";
 static HINSTANCE g_hInst = NULL;
@@ -20,6 +21,7 @@ const UINT idTimer1 = 1;
 UINT nTimerDelay = 10;
 
 HBITMAP hbmBall, hbmRoom;
+
 
 LONG lastTime;
 bool lastTimeSet = false;
@@ -57,11 +59,12 @@ class RoomBitmap {
 	}
 };
 
+std::unique_ptr<RoomBitmap> roomBitmap;
+
 COLORREF GetRoomPixel(int pixelX, int pixelY) {
 	// TODO: cache
-	RoomBitmap bitmap(hbmRoom);
-	if (!bitmap.inside(pixelX, pixelY)) return RGB(255, 0, 0); // outside is the wall
-	return bitmap.Pixel(pixelX, pixelY);
+	if (!roomBitmap->inside(pixelX, pixelY)) return RGB(255, 0, 0); // outside is the wall
+	return roomBitmap->Pixel(pixelX, pixelY);
 }
 
 static int colorDist(COLORREF c1, COLORREF c2) {
@@ -221,6 +224,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				MessageBox(hwnd, "Load of resources failed.", "Error", MB_OK | MB_ICONEXCLAMATION);
 				return -1;
 			}
+
+			roomBitmap = std::unique_ptr<RoomBitmap>(new RoomBitmap(hbmRoom));
 
 			SetTimer(hwnd, idTimer1, nTimerDelay, NULL);
 
