@@ -1,18 +1,24 @@
 #ifndef MBOT_EMUL_H
 #define MBOT_EMUL_H
 
-struct mBotVisual {
-	double x, y;
-	double heading;
+struct Pos {
+   double x = 0, y = 0;
 };
 
-mBotVisual emulatorSetup();
-mBotVisual emulatorLoop(double dt);
+struct MBotPos {
+   // coordinates
+   Pos pos;
+   double heading = 0;
+
+};
+
+MBotPos emulatorSetup();
+MBotPos emulatorLoop(double dt);
 
 enum RoomColor {
    RoomWhite, RoomBlack, RoomWall
 };
-RoomColor GetRoomColor(double x, double y);
+RoomColor GetRoomColor(Pos pos);
 
 #endif
 

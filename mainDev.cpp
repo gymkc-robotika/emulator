@@ -24,7 +24,7 @@ HBITMAP hbmBall, hbmRoom;
 LONG lastTime;
 bool lastTimeSet = false;
 
-mBotVisual visual;
+MBotPos visual;
 
 class RoomBitmap {
    BITMAP bm;
@@ -70,11 +70,11 @@ static COLORREF RoomWallColor = RGB(255, 0, 0);
 /**
 @return 0 white, 1 black, 2 obstacle (red)
 */
-RoomColor GetRoomColor(double x, double y) {
+RoomColor GetRoomColor(Pos pos) {
    // TODO: consider interpolation to achieve smooth edge behaviour
    // TODO: DRY
-	int ballX = 400 + int(x * 100);
-	int ballY = 300 + int(y * 100);
+	int ballX = 400 + int(pos.x * 100);
+	int ballY = 300 + int(pos.y * 100);
 	COLORREF pixel = GetRoomPixel(ballX, ballY);
 	// check color, return color type
 	int whiteDist = colorDist(pixel, RoomWhiteColor);
@@ -108,6 +108,13 @@ void UpdateBall()
 	visual = emulatorLoop(dt);
 }
 
+POINT ScreenPos(double x, double y) {
+   POINT p;
+   p.x = 400 + int(x * 100);
+   p.y = 300 + int(y * 100);
+   return p;
+}
+
 void DrawBall(HWND hwnd, HDC hdc)
 {
    // based on https://docs.microsoft.com/en-us/previous-versions/ms969905(v=msdn.10)
@@ -132,8 +139,8 @@ void DrawBall(HWND hwnd, HDC hdc)
    SelectObject(hdcMem, hbmOldBitmap);
    DeleteDC(hdcMem);
    
-	int ballX = 400 + int(visual.x * 100);
-	int ballY = 300 + int(visual.y * 100);
+	POINT ball = ScreenPos(visual.pos.x, visual.pos.y);
+
 	double sh = sin(visual.heading);
 	double ch = cos(visual.heading);
 	int botSize = 10;
@@ -143,10 +150,10 @@ void DrawBall(HWND hwnd, HDC hdc)
       HPEN hLinePen = CreatePen(PS_SOLID, 3, color);
       HPEN hPenOld = (HPEN)SelectObject(hdcMemory, hLinePen);
       
-   	int posX = int(ballX + ch * botSize * bx + sh * botSize * by);
-   	int posY = int(ballY - sh * botSize * bx + ch * botSize * by);
-   	int posXE = int(ballX + ch * botSize * ex + sh * botSize * ey);
-   	int posYE = int(ballY - sh * botSize * ex + ch * botSize * ey);
+   	int posX = int(ball.x + ch * botSize * bx + sh * botSize * by);
+   	int posY = int(ball.y - sh * botSize * bx + ch * botSize * by);
+   	int posXE = int(ball.x + ch * botSize * ex + sh * botSize * ey);
+   	int posYE = int(ball.y - sh * botSize * ex + ch * botSize * ey);
       MoveToEx(hdcMemory, posX, posY, NULL);
       LineTo(hdcMemory, posXE, posYE);
       

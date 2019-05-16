@@ -5,41 +5,38 @@
 
 #include "MeMCore.h"
 
-class MBot {
-  MeDCMotor *motorR;
-  MeDCMotor *motorL;
+class MBot : public MBotPos {
+   MeDCMotor *motorR;
+   MeDCMotor *motorL;
 
-  public:
-  MBot(MeDCMotor *rm, MeDCMotor *lm) {
-    motorR = rm;
-    motorL = lm;
-  }
+   public:
+   MBot(MeDCMotor *rm, MeDCMotor *lm) {
+      motorR = rm;
+      motorL = lm;
+   }
 
-  // coordinates
-  double x = 0, y = 0;
-  double heading = 0;
-  // current speed
-  double speedX = 0, speedY = 0;
+   // current speed
+   double speedX = 0, speedY = 0;
 
-  void move(double dt) {
-    // TODO: inertia / acceleration
-    double speed = (motorR->speed + motorL->speed) * 0.001;
-    double turnCoef = 0.01;
-    double headingChange = (motorR->speed - motorL->speed) * turnCoef;
+   void move(double dt) {
+      // TODO: inertia / acceleration
+      double speed = (motorR->speed + motorL->speed) * 0.001;
+      double turnCoef = 0.01;
+      double headingChange = (motorR->speed - motorL->speed) * turnCoef;
 
-    heading += headingChange * dt;
+      heading += headingChange * dt;
 
-    x += speed * dt * sin(heading);
-    y += speed * dt * cos(heading);
-  }
+      pos.x += speed * dt * sin(heading);
+      pos.y += speed * dt * cos(heading);
+   }
 };
 
 
 MBot bot = MBot(&motor_9, &motor_10);
 
 int MeLineFollower::readSensors() {
-   RoomColor colorR = GetRoomColor(bot.x, bot.y); // TODO: read two sensors
-   RoomColor colorL = GetRoomColor(bot.x, bot.y); // TODO: read two sensors
+   RoomColor colorR = GetRoomColor(bot.pos); // TODO: read two sensors
+   RoomColor colorL = GetRoomColor(bot.pos); // TODO: read two sensors
    int ret = 0;
    if (colorR != RoomWhite) ret += 1;
    if (colorL != RoomWhite) ret += 2;
@@ -47,20 +44,16 @@ int MeLineFollower::readSensors() {
    
 }
 
-mBotVisual getVisual() {
-   mBotVisual visual;
-   visual.x = bot.x;
-   visual.y = bot.y;
-   visual.heading = bot.heading;
-   return visual;
+MBotPos getVisual() {
+   return bot;
 }
 
-mBotVisual emulatorSetup() {
+MBotPos emulatorSetup() {
    setup();
    return getVisual();
 }
 
-mBotVisual emulatorLoop(double dt) {
+MBotPos emulatorLoop(double dt) {
    loop();
    bot.move(dt);
    return getVisual();
