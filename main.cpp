@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <windows.h>
 #include "mBotEmul.h"
 
 #include "MeMCore.h"
@@ -34,14 +35,17 @@ class MBot {
 };
 
 
-// declare imports - expect the mBot sketch
-void loop();
-
-void setup();
-
-extern MeDCMotor motor_9;
-extern MeDCMotor motor_10;
 MBot bot = MBot(&motor_9, &motor_10);
+
+int MeLineFollower::readSensors() {
+   RoomColor colorR = GetRoomColor(bot.x, bot.y); // TODO: read two sensors
+   RoomColor colorL = GetRoomColor(bot.x, bot.y); // TODO: read two sensors
+   int ret = 0;
+   if (colorR != RoomWhite) ret += 1;
+   if (colorL != RoomWhite) ret += 2;
+   return ret;
+   
+}
 
 mBotVisual getVisual() {
    mBotVisual visual;
@@ -64,4 +68,7 @@ mBotVisual emulatorLoop(double dt) {
    return getVisual();
 }
 
+long millis() {
+   return GetTickCount();
+}
 

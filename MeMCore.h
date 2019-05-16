@@ -33,6 +33,14 @@ class MeRGBLed {
    }
 };
 
+class MeLineFollower {
+   public:
+   explicit MeLineFollower(int port) {
+   }
+   
+   int readSensors();
+};
+
 #define A7 0xa000 + 7
 
 static void pinMode(int pin, int mode) {
@@ -40,9 +48,19 @@ static void pinMode(int pin, int mode) {
 static int analogRead(int pin) {
    return 0;
 }
-static long millis() {
-   return GetTickCount();
-}
+long millis();
+
+
+// declare imports - expect the mBot sketch
+void loop();
+
+void setup();
+
+extern MeDCMotor motor_9;
+extern MeDCMotor motor_10;
+
+extern MeRGBLed rgbled_7;
+extern MeLineFollower linefollower_2;
 
 #endif
 

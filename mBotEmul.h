@@ -9,5 +9,10 @@ struct mBotVisual {
 mBotVisual emulatorSetup();
 mBotVisual emulatorLoop(double dt);
 
+enum RoomColor {
+   RoomWhite, RoomBlack, RoomWall
+};
+RoomColor GetRoomColor(double x, double y);
+
 #endif
 

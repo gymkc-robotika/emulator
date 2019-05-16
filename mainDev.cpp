@@ -6,6 +6,7 @@
 
 #include <windows.h>
 #include <math.h>
+#include <limits.h>
 #include "mBotEmul.h"
 
 static char g_szClassName[] = "mBotEmulatorWindowClass";
@@ -25,12 +26,71 @@ bool lastTimeSet = false;
 
 mBotVisual visual;
 
-COLORREF GetRoomColor(int pixelX, int pixelY) {
+class RoomBitmap {
    BITMAP bm;
-   GetObject(hbmRoom, sizeof(bm), &bm);
-   bm.bmBits;
-   return 0;
-  
+   unsigned char *bits;
+   LONG cb;
+   
+   public:
+   explicit RoomBitmap(HBITMAP handle) {
+      GetObject(hbmRoom, sizeof(bm), &bm);
+      cb = bm.bmWidthBytes * bm.bmHeight;
+      bits = new unsigned char[cb];
+      GetBitmapBits(hbmRoom, cb, bits);
+   }
+   
+   COLORREF Pixel(int pixelX, int pixelY) {
+      int b = bits[pixelX * 4 + pixelY * bm.bmWidthBytes + 0];
+      int g = bits[pixelX * 4 + pixelY * bm.bmWidthBytes + 1];
+      int r = bits[pixelX * 4 + pixelY * bm.bmWidthBytes + 2];
+      return RGB(r, g, b);  
+   }
+   ~RoomBitmap() {
+      delete[] bits;
+   }
+};
+
+COLORREF GetRoomPixel(int pixelX, int pixelY) {
+   // TODO: cache
+   RoomBitmap bitmap(hbmRoom);
+   return bitmap.Pixel(pixelX, pixelY);
+}
+
+static int colorDist(COLORREF c1, COLORREF c2) {
+   int rd = GetRValue(c1) - GetRValue(c2);
+   int gd = GetGValue(c1) - GetGValue(c2);
+   int bd = GetBValue(c1) - GetBValue(c2);
+   return rd * rd + gd * gd + bd * bd;
+}
+
+static COLORREF RoomWhiteColor = RGB(255, 255, 255);
+static COLORREF RoomBlackColor = RGB(0, 0, 0);
+static COLORREF RoomWallColor = RGB(255, 0, 0);
+
+/**
+@return 0 white, 1 black, 2 obstacle (red)
+*/
+RoomColor GetRoomColor(double x, double y) {
+   // TODO: consider interpolation to achieve smooth edge behaviour
+   // TODO: DRY
+	int ballX = 400 + int(x * 100);
+	int ballY = 300 + int(y * 100);
+	COLORREF pixel = GetRoomPixel(ballX, ballY);
+	// check color, return color type
+	int whiteDist = colorDist(pixel, RoomWhiteColor);
+	int blackDist = colorDist(pixel, RoomBlackColor);
+	int wallDist = colorDist(pixel, RoomWallColor);
+	RoomColor bestColor = RoomWhite;
+	int bestDist = whiteDist;
+	if (blackDist < bestDist) {
+	   bestDist = blackDist;
+	   bestColor = RoomBlack;
+   }
+   if (wallDist < bestDist) {
+      bestDist = wallDist;
+      bestColor = RoomWall;
+   }
+   return bestColor;
 }
 
 
