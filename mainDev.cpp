@@ -138,6 +138,8 @@ void DrawBall(HWND hwnd, HDC hdc) {
 	SelectObject(hdcMem, hbmOldBitmap);
 	DeleteDC(hdcMem);
 
+	DeleteObject(hbmMem);
+
 	double botScale = 0.1;
 
 	auto drawLine = [=](COLORREF color, double bx, double by, double ex, double ey) {
