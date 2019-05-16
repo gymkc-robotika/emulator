@@ -23,6 +23,8 @@ HBITMAP hbmBall, hbmRoom;
 
 LONG lastTime;
 bool lastTimeSet = false;
+bool accelerate = false;
+
 
 MBotPos visual;
 
@@ -39,11 +41,15 @@ class RoomBitmap {
 		GetBitmapBits(hbmRoom, cb, bits);
 	}
 
-	COLORREF Pixel(int pixelX, int pixelY) {
+	COLORREF Pixel(int pixelX, int pixelY) const {
 		int b = bits[pixelX * 4 + pixelY * bm.bmWidthBytes + 0];
 		int g = bits[pixelX * 4 + pixelY * bm.bmWidthBytes + 1];
 		int r = bits[pixelX * 4 + pixelY * bm.bmWidthBytes + 2];
 		return RGB(r, g, b);
+	}
+
+	bool inside(int pixelX, int pixelY) const {
+		return pixelX >= 0 && pixelX < bm.bmWidth && pixelY >= 0 && pixelY < bm.bmHeight;
 	}
 
 	~RoomBitmap() {
@@ -54,6 +60,7 @@ class RoomBitmap {
 COLORREF GetRoomPixel(int pixelX, int pixelY) {
 	// TODO: cache
 	RoomBitmap bitmap(hbmRoom);
+	if (!bitmap.inside(pixelX, pixelY)) return RGB(255, 0, 0); // outside is the wall
 	return bitmap.Pixel(pixelX, pixelY);
 }
 
@@ -94,6 +101,11 @@ RoomColor GetRoomColor(Pos pos) {
 	return bestColor;
 }
 
+LONG simulatedTime = 0;
+
+long millis() {
+	return simulatedTime;
+}
 
 void UpdateBall() {
 	LONG now = GetTickCount();
@@ -102,10 +114,19 @@ void UpdateBall() {
 		deltaT = 0;
 		lastTimeSet = true;
 	}
-	lastTime = now;
 
-	double dt = deltaT / 1000.0;
-	visual = emulatorLoop(dt);
+	lastTime = now;
+	int acceleration = accelerate ? 10 : 1;
+
+	long toSimulateMs = deltaT * acceleration;
+	while (toSimulateMs > 0) {
+		long ms = std::min(toSimulateMs, 20L);
+
+		visual = emulatorLoop(ms * 0.001);
+		simulatedTime += ms;
+		toSimulateMs -= ms;
+	}
+
 }
 
 POINT ScreenPos(Pos pos) {
@@ -186,6 +207,7 @@ HBITMAP ReadBitmap(const char *resName, const char *fileName) {
 
 }
 
+
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	switch (Message) {
 		case WM_CREATE:
@@ -204,6 +226,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 
 			break;
+		case WM_KEYDOWN:
+			if(wParam == VK_SHIFT) accelerate = true;
+			break;
+		case WM_KEYUP:
+			if(wParam == VK_SHIFT) accelerate = false;
+			break;
+
 		case WM_TIMER:
 			if (hbmBall && hbmRoom) {
 				HDC hdcWindow;

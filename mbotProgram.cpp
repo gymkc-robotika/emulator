@@ -7,68 +7,63 @@
 MeDCMotor motor_9(9);
 MeDCMotor motor_10(10);
 
-MeRGBLed rgbled_7(7, 7==7?2:4);
+MeRGBLed rgbled_7(7, 7 == 7 ? 2 : 4);
 MeLineFollower linefollower_2(2);
 
 void motorRL(int l, int r) {
-  motor_9.run((9) == M1 ? -(l) : (l));
-  motor_10.run((10) == M1 ? -(r) : (r));
+	motor_9.run((9) == M1 ? -(l) : (l));
+	motor_10.run((10) == M1 ? -(r) : (r));
 }
 
 
 long start;
 enum State {
 	Init,
-	Turn,
+	Following,
 	Reverse,
-	ReverseForAWhile
 };
 
 State state = Init;
 
 
 void doInit() {
-	start =  millis();
+	start = millis();
 	state = Init;
-	motorRL(100, 80);
+	motorRL(100, 100);
 }
 
 void setup() {
 	doInit();
 }
 
-long reverseStart;
-
 void loop() {
+	int line = linefollower_2.readSensors();
 	if (state == Init) {
-	   int line = linefollower_2.readSensors();
-	   if (line !=0) {
-			motorRL(-80, -80);
-			state = Reverse;
-	   }
-	   if (millis() > start + 10000) {
-			motorRL(120, 150);
-			state = Turn;
+		if (line != 0) {
+			motorRL(150, 150);
+			state = Following;
 		}
 	}
-	if (state == Turn) {
-	   int line = linefollower_2.readSensors();
-	   if (line !=0) {
-			motorRL(-80, -80);
+	if (state == Following) {
+		if (line == 0) {
+			motorRL(-80, -85);
 			state = Reverse;
-	   }
+		}
+		if (line == 1) {
+			motorRL(+80, -80);
+		}
+		if (line == 2) {
+			motorRL(-80, +80);
+		}
+		if (line == 3) {
+			motorRL(150, 150);
+		}
 	}
 	if (state == Reverse) {
-	   int line = linefollower_2.readSensors();
-	   if (line == 0) {
-	   	  state = ReverseForAWhile;
-	   	  reverseStart = millis();
-	   }
-	}
-	if (state == ReverseForAWhile) {
-		if (millis() > reverseStart + 2000)  {
-			doInit();
+		if (line != 0) {
+			state = Following;
+			motorRL(150, 150);
 		}
 	}
-	
+
 }

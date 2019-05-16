@@ -35,11 +35,11 @@ class MBot : public MBotPos {
 MBot bot = MBot(&motor_9, &motor_10);
 
 int MeLineFollower::readSensors() {
-	RoomColor colorR = GetRoomColor(bot.pos); // TODO: read two sensors
-	RoomColor colorL = GetRoomColor(bot.pos); // TODO: read two sensors
+	RoomColor colorR = GetRoomColor(bot.local(+0.01, 0.1));
+	RoomColor colorL = GetRoomColor(bot.local(-0.01, 0.1));
 	int ret = 0;
-	if (colorR != RoomWhite) ret += 1;
-	if (colorL != RoomWhite) ret += 2;
+	if (colorR == RoomBlack) ret += 1;
+	if (colorL == RoomBlack) ret += 2;
 	return ret;
 
 }
@@ -59,7 +59,4 @@ MBotPos emulatorLoop(double dt) {
 	return getVisual();
 }
 
-long millis() {
-	return GetTickCount();
-}
 
