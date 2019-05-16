@@ -220,6 +220,11 @@ void DrawBall(HWND hwnd, HDC hdc) {
 	drawLine(DisplaySensor(visual.sensorLeft), +0.3 * botScale, +1 * botScale, +0.3 * botScale, +1 * botScale, 5);
 	drawLine(DisplaySensor(visual.sensorRight), -0.3 * botScale, +1 * botScale, -0.3 * botScale, +1 * botScale, 5);
 
+	double ledY = 0.5;
+	double ledX = 0.4;
+	drawLine(visual.ledLeft, +ledX * botScale, +ledY * botScale, +ledX * botScale, +ledY * botScale, 5);
+	drawLine(visual.ledRight, -ledX * botScale, +ledY * botScale, -ledX * botScale, +ledY * botScale, 5);
+
 	if (false) {
 		drawLine(RGB(100, 150, 255), 0, 0.1, 0, 0.1 + visual.ultrasonicDistance, 2);
 	}

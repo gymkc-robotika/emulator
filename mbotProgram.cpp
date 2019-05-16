@@ -33,6 +33,8 @@ void doInit() {
 	start = millis();
 	state = Init;
 	motorRL(100, 100);
+	rgbled_7.setColor(0, 255, 0, 0);
+	rgbled_7.show();
 }
 
 void setup() {
@@ -62,17 +64,26 @@ void loop() {
 	}
 	if (state == Following) {
 		if (line == 0) {
+			rgbled_7.setColor(0, 255, 128, 0);
 			motorRL(-80, -85);
 			state = Reverse;
 		}
 		if (line == 1) {
 			motorRL(+80, -80);
+			rgbled_7.setColor(1, 255, 0, 0);
+			rgbled_7.setColor(2, 200, 200, 0);
+			rgbled_7.show();
 		}
 		if (line == 2) {
 			motorRL(-80, +80);
+			rgbled_7.setColor(1, 200, 200, 0);
+			rgbled_7.setColor(2, 255, 0, 0);
+			rgbled_7.show();
 		}
 		if (line == 3) {
 			motorRL(150, 150);
+			rgbled_7.setColor(0, 150, 150, 0);
+			rgbled_7.show();
 		}
 	}
 	if (state == Reverse) {

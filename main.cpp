@@ -10,6 +10,8 @@ class MBot : public MBotPos {
 	MeDCMotor *motorL;
 
 	public:
+	COLORREF ledLeftSet, ledRightSet;
+
 	MBot(MeDCMotor *rm, MeDCMotor *lm) {
 		motorR = rm;
 		motorL = lm;
@@ -79,3 +81,18 @@ MBotPos emulatorLoop(double dt) {
 }
 
 
+void MeRGBLed::setColor(int leftRight, int r, int g, int b) {
+	{
+		if (leftRight == 0 || leftRight == 2) {
+			bot.ledLeftSet = RGB(r, g, b);
+		}
+		if (leftRight == 0 || leftRight == 1) {
+			bot.ledRightSet = RGB(r, g, b);
+		}
+	}
+}
+
+void MeRGBLed::show() {
+	bot.ledLeft = bot.ledLeftSet;
+	bot.ledRight = bot.ledRightSet;
+}

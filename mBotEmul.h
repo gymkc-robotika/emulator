@@ -66,6 +66,8 @@ struct MBotPos {
 	RoomColor sensorLeft = RoomWhite, sensorRight = RoomWhite;
 	double ultrasonicDistance = 4.0;
 
+	COLORREF ledLeft, ledRight;
+
 	Pos local(double x, double y) const {
 		double sh = sin(heading);
 		double ch = cos(heading);

@@ -35,11 +35,9 @@ class MeRGBLed {
 		myNumber = number;
 	}
 
-	void setColor(int leftRight, int r, int g, int b) {
-	}
+	void setColor(int leftRight, int r, int g, int b);
 
-	void show() {
-	}
+	void show();
 };
 
 class MeLineFollower {
