@@ -14,7 +14,7 @@ static HINSTANCE g_hInst = NULL;
 const UINT idTimer1 = 1;
 UINT nTimerDelay = 10;
 
-HBITMAP hbmBall, hbmMask;
+HBITMAP hbmBall, hbmRoom;
 BITMAP bm;
 
 int deltaValue = 200;
@@ -53,26 +53,34 @@ void DrawBall(HWND hwnd, HDC hdc)
    HBRUSH hbrBkGnd = CreateSolidBrush(GetSysColor(COLOR_WINDOW));
    FillRect(hdcMemory, &rc, hbrBkGnd);
    DeleteObject(hbrBkGnd);
-
-
+   
+   BITMAP bm;
+   GetObject(hbmRoom, sizeof(bm), &bm);
+   HDC hdcMem = CreateCompatibleDC(hdc);
+   HGDIOBJ hbmOldBitmap = SelectObject(hdcMem, hbmRoom);   
+   
+   BitBlt(hdcMemory, 0, 0, bm.bmWidth, bm.bmHeight, hdcMem, 0, 0, SRCCOPY);
+   SelectObject(hdcMem, hbmOldBitmap);
+   DeleteDC(hdcMem);
+   
 	int width = rc.right - rc.left;
 	int height = rc.bottom - rc.top;
 	
-	int ballX = width / 2 + int(visual.x * 200);
-	int ballY = height / 2 + int(visual.y * 200);
+	int ballX = 400 + int(visual.x * 100);
+	int ballY = 300 + int(visual.y * 100);
 	double sh = sin(visual.heading);
 	double ch = cos(visual.heading);
-	int ballSize = 20;
+	int botSize = 10;
 	
 	auto drawLine = [=] (COLORREF color, double bx, double by, double ex, double ey) {
       // Draw a red line
       HPEN hLinePen = CreatePen(PS_SOLID, 3, color);
       HPEN hPenOld = (HPEN)SelectObject(hdcMemory, hLinePen);
       
-   	int posX = ballX + ch * ballSize * bx + sh * ballSize * by;
-   	int posY = ballY - sh * ballSize * bx + ch * ballSize * by;
-   	int posXE = ballX + ch * ballSize * ex + sh * ballSize * ey;
-   	int posYE = ballY - sh * ballSize * ex + ch * ballSize * ey;
+   	int posX = ballX + ch * botSize * bx + sh * botSize * by;
+   	int posY = ballY - sh * botSize * bx + ch * botSize * by;
+   	int posXE = ballX + ch * botSize * ex + sh * botSize * ey;
+   	int posYE = ballY - sh * botSize * ex + ch * botSize * ey;
       MoveToEx(hdcMemory, posX, posY, NULL);
       LineTo(hdcMemory, posXE, posYE);
       
@@ -81,7 +89,7 @@ void DrawBall(HWND hwnd, HDC hdc)
    };
 
 
-   drawLine(RGB(255, 0, 0), 0, -1, 0, +1);
+   drawLine(RGB(100, 200, 0), 0, -1, 0, +1);
    drawLine(RGB(128, 0, 0), 0.2, -1, -0.2, -1);
 
    BitBlt(hdc,
@@ -105,8 +113,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
          visual = emulatorSetup();
 		
          hbmBall = LoadBitmap(g_hInst, "BALLBMP");
-         hbmMask = LoadBitmap(g_hInst, "MASKBMP");
-         if(!hbmBall || !hbmMask){
+         hbmRoom = LoadBitmap(g_hInst, "ROOMBMP");
+         if(!hbmBall || !hbmRoom){
             MessageBox(hwnd, "Load of resources failed.", "Error",
                MB_OK | MB_ICONEXCLAMATION);
             return -1;
@@ -118,7 +126,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 
       break;
       case WM_TIMER:
-         if(hbmBall && hbmMask)
+         if(hbmBall && hbmRoom)
          {
             HDC hdcWindow;
             hdcWindow = GetDC(hwnd);
@@ -130,7 +138,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
          }
       break;
       case WM_PAINT:
-         if(hbmBall && hbmMask)
+         if(hbmBall && hbmRoom)
          {
             PAINTSTRUCT ps;
             HDC hdcWindow;
@@ -150,7 +158,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
          KillTimer(hwnd, idTimer1);
          
          DeleteObject(hbmBall);
-         DeleteObject(hbmMask);
+         DeleteObject(hbmRoom);
          PostQuitMessage(0);
       break;
       default:
@@ -189,12 +197,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
       return 0;
    }
 
+   RECT clientRect;
+   clientRect.top = 0;
+   clientRect.left = 0;
+   clientRect.right = 800;
+   clientRect.bottom = 600;
+   RECT winRect = clientRect;
+   AdjustWindowRectEx(&winRect, WS_CAPTION, FALSE, WS_EX_CLIENTEDGE);
    hwnd = CreateWindowEx(
       WS_EX_CLIENTEDGE,
       g_szClassName,
       "GymKC Robotika - mBot Emulator",
       WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, CW_USEDEFAULT, 320, 240,
+      CW_USEDEFAULT, CW_USEDEFAULT, winRect.right - winRect.left, winRect.bottom - winRect.top,
       NULL, NULL, g_hInst, NULL);
 
    if(hwnd == NULL)

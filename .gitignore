@@ -37,3 +37,4 @@ fabric.properties
 *.exe
 /mBotDev_private.*
 /Makefile.win
+/*.layout
