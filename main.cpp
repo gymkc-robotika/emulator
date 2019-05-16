@@ -27,8 +27,8 @@ void MBot::move(double dt) {
 	double turnCoef = 0.01;
 	double headingChange = (motorR->effectiveSpeed() - motorL->effectiveSpeed()) * turnCoef;
 
-	auto frontLeft = GetRoomColor(local(+0.03, 0.12));
-	auto frontRight = GetRoomColor(local(-0.05, 0.12));
+	auto frontLeft = GetRoomColor(body(+0.3, 1));
+	auto frontRight = GetRoomColor(body(-0.3, 1));
 
 	// obstacle in front means we cannot move forward
 	if (frontLeft == RoomWall || frontRight == RoomWall) {
@@ -42,6 +42,8 @@ void MBot::move(double dt) {
 
 	sensorLeft = GetRoomColor(local(+0.01, 0.1));
 	sensorRight = GetRoomColor(local(-0.01, 0.1));
+
+	ultrasonicDistance = std::min(RoomRayCast(local(0, botScale * 1.1), local(0, botScale * 1.1 + 4.1)), 4.0);
 }
 
 
@@ -55,6 +57,10 @@ int MeLineFollower::readSensors() {
 	if (colorL == RoomBlack) ret += 2;
 	return ret;
 
+}
+
+int MeUltrasonicSensor::distanceCm() {
+	return int(ceil(bot.ultrasonicDistance * 100));
 }
 
 MBotPos getVisual() {

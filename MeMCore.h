@@ -50,6 +50,13 @@ class MeLineFollower {
 	int readSensors();
 };
 
+class MeUltrasonicSensor {
+	public:
+	explicit MeUltrasonicSensor(int port) {
+	}
+
+	int distanceCm();
+};
 #define A7 0xa000 + 7
 
 static void pinMode(int pin, int mode) {

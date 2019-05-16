@@ -59,6 +59,20 @@ class RoomBitmap {
 	}
 };
 
+static int ScreenScale = 100;
+
+POINT ScreenPos(Pos pos) {
+	POINT p;
+	p.x = 400 + int(pos.x * ScreenScale);
+	p.y = 300 + int(pos.y * ScreenScale);
+	return p;
+}
+
+double PixelSize() {
+	return 1.0 / ScreenScale;
+}
+
+
 std::unique_ptr<RoomBitmap> roomBitmap;
 
 COLORREF GetRoomPixel(int pixelX, int pixelY) {
@@ -104,6 +118,25 @@ RoomColor GetRoomColor(Pos pos) {
 	return bestColor;
 }
 
+
+double RoomRayCast(Pos beg, Pos end) {
+	// TODO: proper DDA implementation
+	double dist = end.dist(beg);
+
+	double pixel = PixelSize();
+	int pixels = (int)ceil(dist / pixel);
+	Pos pos = beg;
+	Pos step = (end - beg) / pixels;
+	for (int i = 0; i <= pixels; i++, pos += step) {
+		auto c = GetRoomColor(pos);
+		if (c == RoomWall) {
+			break;
+		}
+	}
+	return pos.dist(beg);
+}
+
+
 LONG simulatedTime = 0;
 
 long millis() {
@@ -130,13 +163,6 @@ void UpdateBall() {
 		toSimulateMs -= ms;
 	}
 
-}
-
-POINT ScreenPos(Pos pos) {
-	POINT p;
-	p.x = 400 + int(pos.x * 100);
-	p.y = 300 + int(pos.y * 100);
-	return p;
 }
 
 COLORREF DisplaySensor(RoomColor roomColor) {
@@ -173,15 +199,13 @@ void DrawBall(HWND hwnd, HDC hdc) {
 
 	DeleteObject(hbmMem);
 
-	double botScale = 0.1;
-
 	auto drawLine = [=](COLORREF color, double bx, double by, double ex, double ey, int lineWidth = 3) {
 		// Draw a red line
 		HPEN hLinePen = CreatePen(PS_SOLID, lineWidth, color);
 		HPEN hPenOld = (HPEN) SelectObject(hdcMemory, hLinePen);
 
-		POINT pos = ScreenPos(visual.local(botScale * bx, botScale * by));
-		POINT posE = ScreenPos(visual.local(botScale * ex, botScale * ey));
+		POINT pos = ScreenPos(visual.local(bx, by));
+		POINT posE = ScreenPos(visual.local(ex, ey));
 		MoveToEx(hdcMemory, pos.x, pos.y, NULL);
 		LineTo(hdcMemory, posE.x, posE.y);
 
@@ -190,11 +214,15 @@ void DrawBall(HWND hwnd, HDC hdc) {
 	};
 
 
-	drawLine(RGB(100, 200, 0), 0, -1, 0, +1);
-	drawLine(RGB(128, 0, 0), 0.3, -1, -0.3, -1);
+	drawLine(RGB(100, 200, 0), 0, -1 * botScale, 0, +1 * botScale);
+	drawLine(RGB(128, 0, 0), 0.3 * botScale, -1 * botScale, -0.3 * botScale, -1 * botScale);
 
-	drawLine(DisplaySensor(visual.sensorLeft), +0.3, +1, +0.3, +1, 5);
-	drawLine(DisplaySensor(visual.sensorRight), -0.3, +1, -0.3, +1, 5);
+	drawLine(DisplaySensor(visual.sensorLeft), +0.3 * botScale, +1 * botScale, +0.3 * botScale, +1 * botScale, 5);
+	drawLine(DisplaySensor(visual.sensorRight), -0.3 * botScale, +1 * botScale, -0.3 * botScale, +1 * botScale, 5);
+
+	if (false) {
+		drawLine(RGB(100, 150, 255), 0, 0.1, 0, 0.1 + visual.ultrasonicDistance, 2);
+	}
 
 	BitBlt(hdc,
 			 rc.left, rc.top,
