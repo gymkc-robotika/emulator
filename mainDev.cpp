@@ -138,9 +138,10 @@ double RoomRayCast(Pos beg, Pos end) {
 }
 
 
-LONG simulatedTime = 0;
+static LONG simulatedTime = 0;
 
-bool buttonL = false;
+static bool buttonL = false;
+static bool buttonR = false;
 
 long millis() {
 	return simulatedTime;
@@ -262,6 +263,7 @@ HBITMAP ReadBitmap(const char *resName, const char *fileName) {
 
 }
 
+static int mouseMoveStartX, mouseMoveStartY;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	switch (Message) {
@@ -289,20 +291,34 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_KEYUP:
 			if (wParam == VK_SHIFT) accelerate = false;
 			break;
-		case WM_LBUTTONDOWN:
-			buttonL = true;
-			break;
-		case WM_LBUTTONUP: {
+		case WM_LBUTTONDOWN: {
 			int xPos = GET_X_LPARAM(lParam);
 			int yPos = GET_Y_LPARAM(lParam);
-
 			placeMBot((xPos - 400)* PixelSize(), (yPos - 300) * PixelSize());
-			buttonL = false;
+			mouseMoveStartX = xPos;
+			mouseMoveStartY = yPos;
+			buttonL = true;
 			break;
 		}
+		case WM_RBUTTONDOWN: {
+			buttonR = true;
+			break;
+		}
+		case WM_LBUTTONUP:
+			buttonL = false;
+			break;
+		case WM_RBUTTONUP:
+			buttonR = false;
+			break;
 		case WM_MOUSEMOVE:
-			if (buttonL) {
-				// TODO: drag with mouse - adjust heading
+			if (buttonL || buttonR) {
+				POINT botPos = ScreenPos(visual.pos);
+				int xPos = GET_X_LPARAM(lParam);
+				int yPos = GET_Y_LPARAM(lParam);
+				if (abs(xPos - botPos.x) > 5 || abs (yPos - botPos.y) > 5) {
+					double heading = atan2(xPos - botPos.x, yPos - botPos.y);
+					rotateMBot(heading);
+				}
 			}
 			break;
 

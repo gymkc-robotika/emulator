@@ -85,6 +85,10 @@ void placeMBot(double xPos, double yPos) {
 	bot.pos.y = yPos;
 }
 
+void rotateMBot(double heading) {
+	bot.heading = heading;
+}
+
 
 void MeRGBLed::setColor(int leftRight, int r, int g, int b) {
 	{
