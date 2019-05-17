@@ -10,7 +10,7 @@ PrivateResource=mBotDev_private.rc
 ResourceIncludes=
 MakeIncludes=
 Compiler=
-CppCompiler=-std=c++11_@@_
+CppCompiler=-std=c++11_@@_-Wall_@@_-Wextra_@@_-Wno-unknown-pragmas_@@_-Wno-unused-function_@@_-Wno-unused-parameter_@@_
 Linker=
 IsCpp=1
 Icon=
