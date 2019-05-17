@@ -80,7 +80,7 @@ MBotPos emulatorLoop(double dt) {
 	return getVisual();
 }
 
-void placeMBot(int xPos, int yPos) {
+void placeMBot(double xPos, double yPos) {
 	bot.pos.x = xPos;
 	bot.pos.y = yPos;
 }

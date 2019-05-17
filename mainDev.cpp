@@ -296,7 +296,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			int xPos = GET_X_LPARAM(lParam);
 			int yPos = GET_Y_LPARAM(lParam);
 
-			placeMBot(int((xPos - 400)* PixelSize()), int((yPos - 300) * PixelSize()));
+			placeMBot((xPos - 400)* PixelSize(), (yPos - 300) * PixelSize());
 			buttonL = false;
 			break;
 		}
