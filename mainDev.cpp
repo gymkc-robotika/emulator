@@ -252,8 +252,8 @@ void DrawBall(HWND hwnd, HDC hdc) {
 	drawLine(RGB(100, 200, 0), 0, -1 * botScale, 0, +1 * botScale);
 	drawLine(RGB(128, 0, 0), 0.3 * botScale, -1 * botScale, -0.3 * botScale, -1 * botScale);
 
-	drawLine(DisplaySensor(visual.sensorLeft), +0.3 * botScale, +1 * botScale, +0.3 * botScale, +1 * botScale, 5);
-	drawLine(DisplaySensor(visual.sensorRight), -0.3 * botScale, +1 * botScale, -0.3 * botScale, +1 * botScale, 5);
+	drawLine(DisplaySensor(visual.sensorLeft),  MBotConfig::lineSensorPosL, MBotConfig::lineSensorPosFront, MBotConfig::lineSensorPosL, MBotConfig::lineSensorPosFront, 5);
+	drawLine(DisplaySensor(visual.sensorRight), MBotConfig::lineSensorPosR, MBotConfig::lineSensorPosFront, MBotConfig::lineSensorPosR, MBotConfig::lineSensorPosFront, 5);
 
 	double ledY = 0.5;
 	double ledX = 0.4;

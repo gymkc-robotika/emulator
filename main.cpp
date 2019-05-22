@@ -5,7 +5,7 @@
 
 #include "MeMCore.h"
 
-class MBot : public MBotPos {
+class MBot : public MBotPos, MBotConfig {
 	MeDCMotor *motorR;
 	MeDCMotor *motorL;
 
@@ -42,8 +42,8 @@ void MBot::move(double dt) {
 	pos.x += speed * dt * sin(heading);
 	pos.y += speed * dt * cos(heading);
 
-	sensorLeft = GetRoomColor(local(+0.01, 0.1));
-	sensorRight = GetRoomColor(local(-0.01, 0.1));
+	sensorLeft = GetRoomColor(local(lineSensorPosL, lineSensorPosFront));
+	sensorRight = GetRoomColor(local(lineSensorPosR, lineSensorPosFront));
 
 	ultrasonicDistance = std::min(RoomRayCast(local(0, botScale * 1.1), local(0, botScale * 1.1 + 4.1)), 4.0);
 }

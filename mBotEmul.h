@@ -66,7 +66,7 @@ struct MBotPos {
 	RoomColor sensorLeft = RoomWhite, sensorRight = RoomWhite;
 	double ultrasonicDistance = 4.0;
 
-	COLORREF ledLeft, ledRight;
+	COLORREF ledLeft = 0, ledRight = 0;
 
 	Pos local(double x, double y) const {
 		double sh = sin(heading);
@@ -79,6 +79,12 @@ struct MBotPos {
 	Pos body(double x, double y) const {
 		return local(x * botScale, y * botScale);
 	}
+};
+
+struct MBotConfig {
+	static constexpr double lineSensorPosFront = 0.1;
+	static constexpr double lineSensorPosL = +0.005;
+	static constexpr double lineSensorPosR = -0.005;
 };
 
 MBotPos emulatorSetup();
