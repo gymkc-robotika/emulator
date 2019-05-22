@@ -263,8 +263,6 @@ HBITMAP ReadBitmap(const char *resName, const char *fileName) {
 
 }
 
-static int mouseMoveStartX, mouseMoveStartY;
-
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	switch (Message) {
 		case WM_CREATE:
@@ -295,8 +293,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			int xPos = GET_X_LPARAM(lParam);
 			int yPos = GET_Y_LPARAM(lParam);
 			placeMBot((xPos - 400)* PixelSize(), (yPos - 300) * PixelSize());
-			mouseMoveStartX = xPos;
-			mouseMoveStartY = yPos;
 			buttonL = true;
 			break;
 		}
