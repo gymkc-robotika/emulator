@@ -62,10 +62,14 @@ void loop() {
 			state = Following;
 		}
 	}
-	if (state == Following) {
+	if (state == Reverse && line == 0) {
+		rgbled_7.setColor(0, 255, 128, 0);
+		motorRL(-85, -85);
+	}
+	if (state == Following || (state == Reverse && line != 0)) {
 		if (line == 0) {
 			rgbled_7.setColor(0, 255, 128, 0);
-			motorRL(-80, -85);
+			motorRL(-85, -85);
 			state = Reverse;
 		}
 		if (line == 1) {
@@ -86,11 +90,4 @@ void loop() {
 			rgbled_7.show();
 		}
 	}
-	if (state == Reverse) {
-		if (line != 0) {
-			state = Following;
-			motorRL(150, 150);
-		}
-	}
-
 }

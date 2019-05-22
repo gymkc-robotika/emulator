@@ -93,15 +93,42 @@ static COLORREF RoomWhiteColor = RGB(255, 255, 255);
 static COLORREF RoomBlackColor = RGB(0, 0, 0);
 static COLORREF RoomWallColor = RGB(255, 0, 0);
 
+
+COLORREF LerpColor(COLORREF a, COLORREF b, double f) {
+	int ra = GetRValue(a);
+	int ga = GetGValue(a);
+	int ba = GetBValue(a);
+	int rb = GetRValue(b);
+	int gb = GetGValue(b);
+	int bb = GetBValue(b);
+	int xr = int(ra + (rb - ra) * f);
+	int xg = int(ga + (gb - ga) * f);
+	int xb = int(ba + (bb - ba) * f);
+	if (xr < 0) xr = 0; else if (xr > 255) xr = 255;
+	if (xg < 0) xg = 0; else if (xg > 255) xg = 255;
+	if (xb < 0) xb = 0; else if (xb > 255) xb = 255;
+	return RGB(xr, xg, xb);
+}
 /**
 @return 0 white, 1 black, 2 obstacle (red)
 */
 RoomColor GetRoomColor(Pos pos) {
-	// TODO: consider interpolation to achieve smooth edge behaviour
 	// TODO: DRY
-	int ballX = 400 + int(pos.x * 100);
-	int ballY = 300 + int(pos.y * 100);
-	COLORREF pixel = GetRoomPixel(ballX, ballY);
+	double ballXD = 400 + (pos.x * 100);
+	double ballYD = 300 + (pos.y * 100);
+	int ballX = int(floor(ballXD));
+	int ballY = int(floor(ballYD));
+	double ballXF = ballXD - ballX;
+	double ballYF = ballYD - ballY;
+
+	COLORREF pixel00 = GetRoomPixel(ballX, ballY);
+	COLORREF pixel01 = GetRoomPixel(ballX, ballY + 1);
+	COLORREF pixel10 = GetRoomPixel(ballX + 1, ballY);
+	COLORREF pixel11 = GetRoomPixel(ballX + 1, ballY + 1);
+	COLORREF pixelX0 = LerpColor(pixel00, pixel10, ballXF);
+	COLORREF pixelX1 = LerpColor(pixel01, pixel11, ballXF);
+	COLORREF pixel = LerpColor(pixelX0, pixelX1, ballYF);
+
 	// check color, return color type
 	int whiteDist = colorDist(pixel, RoomWhiteColor);
 	int blackDist = colorDist(pixel, RoomBlackColor);
