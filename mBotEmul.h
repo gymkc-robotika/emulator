@@ -85,6 +85,10 @@ struct MBotConfig {
 	static constexpr double lineSensorPosFront = 0.1;
 	static constexpr double lineSensorPosL = +0.005;
 	static constexpr double lineSensorPosR = -0.005;
+
+	static constexpr double collisionFront = 0.12;
+	static constexpr double collisionL = +0.05;
+	static constexpr double collisionR = -0.05;
 };
 
 MBotPos emulatorSetup();

@@ -25,17 +25,23 @@ class MBot : public MBotPos, MBotConfig {
 
 void MBot::move(double dt) {
 	// TODO: inertia / acceleration
-	double speed = (motorR->effectiveSpeed() + motorL->effectiveSpeed()) * 0.001;
-	double turnCoef = 0.01;
-	double headingChange = (motorR->effectiveSpeed() - motorL->effectiveSpeed()) * turnCoef;
+	double speedR = motorR->effectiveSpeed();
+	double speedL = motorL->effectiveSpeed();
 
-	auto frontLeft = GetRoomColor(body(+0.3, 1));
-	auto frontRight = GetRoomColor(body(-0.3, 1));
+	auto frontLeft = GetRoomColor(local(collisionL, collisionFront));
+	auto frontRight = GetRoomColor(local(collisionR, collisionFront));
 
 	// obstacle in front means we cannot move forward
-	if (frontLeft == RoomWall || frontRight == RoomWall) {
-		speed = std::min(speed, 0.0);
+	if (frontLeft == RoomWall) {
+		speedL = std::min(speedL, 0.0);
 	}
+	if (frontRight == RoomWall) {
+		speedR = std::min(speedR, 0.0);
+	}
+
+	double speed = (speedR + speedL) * 0.001;
+	double turnCoef = 0.01;
+	double headingChange = (speedR - speedL) * turnCoef;
 
 	heading += headingChange * dt;
 
