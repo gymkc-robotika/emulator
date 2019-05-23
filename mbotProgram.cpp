@@ -36,7 +36,7 @@ bool buttonState = false;
 
 int buttonEdge() {
   int ret = ButtonNone;
-  bool button = analogRead(A7) > 10;
+  bool button = analogRead(A7) < 10;
   if (button && !buttonState) {
     ret = ButtonPressed;
   }
