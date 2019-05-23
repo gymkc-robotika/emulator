@@ -62,7 +62,7 @@ void loop() {
 	if (state == Init) {
 		if (buttonEdge() == ButtonReleased) {
 			state = Following;
-			motorRL(100, 100);
+			motorRL(100, 200);
 			rgbled_7.setColor(0, 255, 0, 0);
 			rgbled_7.show();
 		}
