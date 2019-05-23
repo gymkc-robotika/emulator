@@ -2,10 +2,15 @@
 #define MEM_CORE_H
 
 #include <math.h>
+#include <random>
 
 #define M1 0
 
 class MeDCMotor {
+	double randomFactor = 1;
+	double randomDT = 0;
+	static constexpr double randomDTAfter = 1.0;
+
 	public:
 	int motorNumber;
 	int speed;
@@ -19,11 +24,21 @@ class MeDCMotor {
 		speed = s;
 	}
 
-	int effectiveSpeed() const {
+	double effectiveSpeed() const {
 		if (abs(speed) < 80) return 0;
-		if (speed > 255) return 255;
-		if (speed < - 255) return -255;
-		return speed;
+		if (speed > 255) return 255 * randomFactor;
+		if (speed < - 255) return -255 * randomFactor;
+		return speed * randomFactor;
+	}
+
+	void simulate(double dt) {
+		randomDT += dt;
+		if (randomDT >= randomDTAfter) {
+			randomDT -= randomDTAfter;
+			double f = (rand() & RAND_MAX) / double(RAND_MAX);
+			const double randomness = 0.02;
+			randomFactor = 1 + f * randomness - randomness / 2;
+		}
 	}
 };
 

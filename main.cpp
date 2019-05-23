@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <windows.h>
+#include <ctime>
 #include "mBotEmul.h"
 
 #include "MeMCore.h"
@@ -21,6 +22,7 @@ public:
 	// current speed
 	double speedX = 0, speedY = 0;
 
+
 	void move(double dt, bool button);
 };
 
@@ -28,6 +30,9 @@ void MBot::move(double dt, bool button) {
 	buttonState = button;
 
 	// TODO: inertia / acceleration
+	motorR->simulate(dt);
+	motorL->simulate(dt);
+
 	double speedR = motorR->effectiveSpeed();
 	double speedL = motorL->effectiveSpeed();
 
@@ -89,6 +94,7 @@ MBotPos getVisual() {
 }
 
 MBotPos emulatorSetup() {
+	srand(time(NULL));
 	setup();
 	return getVisual();
 }
