@@ -30,13 +30,13 @@ State state = Init;
 long collisionTime;
 bool buttonState = false;
 
-enum ButtonEdge {
-    ButtonNone, ButtonPressed, ButtonReleased
-};
+#define ButtonNone 0
+#define ButtonPressed 1
+#define ButtonReleased 2
 
-ButtonEdge buttonEdge() {
-  ButtonEdge ret = ButtonNone;
-  auto button = analogRead(A7) > 10;
+int buttonEdge() {
+  int ret = ButtonNone;
+  bool button = analogRead(A7) > 10;
   if (button && !buttonState) {
     ret = ButtonPressed;
   }
