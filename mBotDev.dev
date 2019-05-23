@@ -60,7 +60,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit1]
-FileName=main.cpp
+FileName=mBotEmul.cpp
 CompileCpp=1
 Folder=
 Compile=1
@@ -70,7 +70,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit3]
-FileName=mainDev.cpp
+FileName=winMain.cpp
 CompileCpp=1
 Folder=
 Compile=1
