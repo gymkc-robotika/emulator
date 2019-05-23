@@ -132,5 +132,5 @@ void MeRGBLed::show() {
 }
 
 int analogRead(int pin) {
-	return bot.buttonState ? 20 : 0;
+	return bot.buttonState ? 0 : 20;
 }
