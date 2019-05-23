@@ -60,9 +60,7 @@ class MeUltrasonicSensor {
 static void pinMode(int pin, int mode) {
 }
 
-static int analogRead(int pin) {
-	return 0;
-}
+int analogRead(int pin);
 
 long millis();
 

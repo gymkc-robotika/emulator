@@ -89,11 +89,15 @@ struct MBotConfig {
 	static constexpr double collisionFront = 0.12;
 	static constexpr double collisionL = +0.05;
 	static constexpr double collisionR = -0.05;
+
+  static constexpr double collisionBack = -0.12;
+  static constexpr double collisionBL = collisionL;
+  static constexpr double collisionBR = collisionR;
 };
 
 MBotPos emulatorSetup();
 
-MBotPos emulatorLoop(double dt);
+MBotPos emulatorLoop(double dt, bool button);
 
 void placeMBot(double xPos, double yPos);
 

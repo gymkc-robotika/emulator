@@ -21,7 +21,7 @@ static HINSTANCE g_hInst = NULL;
 const UINT idTimer1 = 1;
 UINT nTimerDelay = 10;
 
-HBITMAP hbmBall, hbmRoom;
+HBITMAP hbmRoom;
 
 
 LONG lastTime;
@@ -114,8 +114,8 @@ COLORREF LerpColor(COLORREF a, COLORREF b, double f) {
 */
 RoomColor GetRoomColor(Pos pos) {
 	// TODO: DRY
-	double ballXD = 400 + (pos.x * 100);
-	double ballYD = 300 + (pos.y * 100);
+	double ballXD = 400 + (pos.x * 100) - 0.5;
+	double ballYD = 300 + (pos.y * 100) - 0.5;
 	int ballX = int(floor(ballXD));
 	int ballY = int(floor(ballYD));
 	double ballXF = ballXD - ballX;
@@ -169,12 +169,13 @@ static LONG simulatedTime = 0;
 
 static bool buttonL = false;
 static bool buttonR = false;
+static bool buttonM = false;
 
 long millis() {
 	return simulatedTime;
 }
 
-void UpdateBall() {
+void UpdateBot() {
 	LONG now = GetTickCount();
 	LONG deltaT = now - lastTime;
 	if (!lastTimeSet) {
@@ -189,7 +190,7 @@ void UpdateBall() {
 	while (toSimulateMs > 0) {
 		long ms = std::min(toSimulateMs, 20L);
 
-		visual = emulatorLoop(ms * 0.001);
+		visual = emulatorLoop(ms * 0.001, buttonM);
 		simulatedTime += ms;
 		toSimulateMs -= ms;
 	}
@@ -209,7 +210,7 @@ COLORREF DisplaySensor(RoomColor roomColor) {
 	}
 }
 
-void DrawBall(HWND hwnd, HDC hdc) {
+void DrawBot(HWND hwnd, HDC hdc) {
 	// based on https://docs.microsoft.com/en-us/previous-versions/ms969905(v=msdn.10)
 	RECT rc;
 	GetClientRect(hwnd, &rc);
@@ -249,11 +250,13 @@ void DrawBall(HWND hwnd, HDC hdc) {
 	};
 
 
-	drawLine(RGB(100, 200, 0), 0, -1 * botScale, 0, +1 * botScale);
-	drawLine(RGB(128, 0, 0), 0.3 * botScale, -1 * botScale, -0.3 * botScale, -1 * botScale);
+	drawLine(DisplaySensor(visual.sensorLeft),  MBotConfig::lineSensorPosL, MBotConfig::lineSensorPosFront, MBotConfig::lineSensorPosL * 5, MBotConfig::lineSensorPosFront, 3);
+	drawLine(DisplaySensor(visual.sensorRight), MBotConfig::lineSensorPosR, MBotConfig::lineSensorPosFront, MBotConfig::lineSensorPosR * 5, MBotConfig::lineSensorPosFront, 3);
 
-	drawLine(DisplaySensor(visual.sensorLeft),  MBotConfig::lineSensorPosL, MBotConfig::lineSensorPosFront, MBotConfig::lineSensorPosL, MBotConfig::lineSensorPosFront, 5);
-	drawLine(DisplaySensor(visual.sensorRight), MBotConfig::lineSensorPosR, MBotConfig::lineSensorPosFront, MBotConfig::lineSensorPosR, MBotConfig::lineSensorPosFront, 5);
+	drawLine(0, MBotConfig::collisionL, MBotConfig::collisionFront, MBotConfig::collisionR, MBotConfig::collisionFront, 1);
+	drawLine(0, MBotConfig::collisionBL, MBotConfig::collisionBack, MBotConfig::collisionBR, MBotConfig::collisionBack, 1);
+	drawLine(0, MBotConfig::collisionL, MBotConfig::collisionFront, MBotConfig::collisionBL, MBotConfig::collisionBack, 1);
+	drawLine(0, MBotConfig::collisionR, MBotConfig::collisionFront, MBotConfig::collisionBR, MBotConfig::collisionBack, 1);
 
 	double ledY = 0.5;
 	double ledX = 0.4;
@@ -296,10 +299,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			visual = emulatorSetup();
 
-			hbmBall = ReadBitmap("BALLBMP", "../ball.bmp");
 			hbmRoom = ReadBitmap("ROOMBMP", "../room.bmp");
 
-			if (!hbmBall || !hbmRoom) {
+			if (!hbmRoom) {
 				MessageBox(hwnd, "Load of resources failed.", "Error", MB_OK | MB_ICONEXCLAMATION);
 				return -1;
 			}
@@ -327,6 +329,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			buttonR = true;
 			break;
 		}
+    case WM_MBUTTONDOWN: {
+      buttonM = true;
+      break;
+    }
+    case WM_MBUTTONUP: {
+      buttonM = false;
+      break;
+    }
 		case WM_LBUTTONUP:
 			buttonL = false;
 			break;
@@ -346,23 +356,23 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			break;
 
 		case WM_TIMER:
-			if (hbmBall && hbmRoom) {
+			if (hbmRoom) {
 				HDC hdcWindow;
 				hdcWindow = GetDC(hwnd);
 
-				UpdateBall();
-				DrawBall(hwnd, hdcWindow);
+        UpdateBot();
+        DrawBot(hwnd, hdcWindow);
 
 				ReleaseDC(hwnd, hdcWindow);
 			}
 			break;
 		case WM_PAINT:
-			if (hbmBall && hbmRoom) {
+			if (hbmRoom) {
 				PAINTSTRUCT ps;
 				HDC hdcWindow;
 				hdcWindow = BeginPaint(hwnd, &ps);
 
-				DrawBall(hwnd, hdcWindow);
+				DrawBot(hwnd, hdcWindow);
 
 				EndPaint(hwnd, &ps);
 			}
@@ -375,7 +385,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_DESTROY:
 			KillTimer(hwnd, idTimer1);
 
-			DeleteObject(hbmBall);
 			DeleteObject(hbmRoom);
 			PostQuitMessage(0);
 			break;

@@ -28,6 +28,25 @@ enum State {
 
 State state = Init;
 long collisionTime;
+bool buttonState = false;
+
+enum ButtonEdge {
+    ButtonNone, ButtonPressed, ButtonReleased
+};
+
+ButtonEdge buttonEdge() {
+  ButtonEdge ret = ButtonNone;
+  auto button = analogRead(A7) > 10;
+  if (button && !buttonState) {
+    ret = ButtonPressed;
+  }
+  if (!button && buttonState) {
+    ret = ButtonReleased;
+  }
+  buttonState = button;
+  return ret;
+}
+
 
 void doInit() {
 	start = millis();
@@ -45,10 +64,16 @@ void loop() {
 	int line = linefollower_2.readSensors();
 	int dist = ultrasonic_3.distanceCm();
 
-	if (dist < 5) {
-		state = Collision;
-		collisionTime = millis();
-		motorRL(-80, -90);
+	if (buttonEdge() == ButtonPressed) {
+		doInit();
+	}
+
+	if (false) {
+		if (dist < 5) {
+			state = Collision;
+			collisionTime = millis();
+			motorRL(-80, -90);
+		}
 	}
 
 	if (state == Collision) {

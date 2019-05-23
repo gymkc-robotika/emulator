@@ -11,6 +11,7 @@ class MBot : public MBotPos, MBotConfig {
 
 	public:
 	COLORREF ledLeftSet, ledRightSet;
+  bool buttonState = false;
 
 	MBot(MeDCMotor *rm, MeDCMotor *lm) {
 		motorR = rm;
@@ -20,16 +21,21 @@ class MBot : public MBotPos, MBotConfig {
 	// current speed
 	double speedX = 0, speedY = 0;
 
-	void move(double dt);
+	void move(double dt, bool button);
 };
 
-void MBot::move(double dt) {
+void MBot::move(double dt, bool button) {
+  buttonState = button;
+
 	// TODO: inertia / acceleration
 	double speedR = motorR->effectiveSpeed();
 	double speedL = motorL->effectiveSpeed();
 
 	auto frontLeft = GetRoomColor(local(collisionL, collisionFront));
 	auto frontRight = GetRoomColor(local(collisionR, collisionFront));
+
+  auto backLeft = GetRoomColor(local(collisionBL, collisionBack));
+  auto backRight = GetRoomColor(local(collisionBR, collisionBack));
 
 	// obstacle in front means we cannot move forward
 	if (frontLeft == RoomWall) {
@@ -38,6 +44,13 @@ void MBot::move(double dt) {
 	if (frontRight == RoomWall) {
 		speedR = std::min(speedR, 0.0);
 	}
+
+  if (backLeft == RoomWall) {
+    speedL = std::max(speedL, 0.0);
+  }
+  if (backRight == RoomWall) {
+    speedR = std::max(speedR, 0.0);
+  }
 
 	double speed = (speedR + speedL) * 0.001;
 	double turnCoef = 0.01;
@@ -80,9 +93,9 @@ MBotPos emulatorSetup() {
 	return getVisual();
 }
 
-MBotPos emulatorLoop(double dt) {
+MBotPos emulatorLoop(double dt, bool button) {
 	loop();
-	bot.move(dt);
+	bot.move(dt, button);
 	return getVisual();
 }
 
@@ -110,4 +123,8 @@ void MeRGBLed::setColor(int leftRight, int r, int g, int b) {
 void MeRGBLed::show() {
 	bot.ledLeft = bot.ledLeftSet;
 	bot.ledRight = bot.ledRightSet;
+}
+
+int analogRead(int pin) {
+  return bot.buttonState ? 20 : 0;
 }
