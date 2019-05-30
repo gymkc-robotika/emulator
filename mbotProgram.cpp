@@ -49,8 +49,10 @@ int buttonEdge() {
 
 
 void doInit() {
+	start = millis();
 	state = Init;
-	rgbled_7.setColor(0, 0, 0, 0);
+	motorRL(100, 100);
+	rgbled_7.setColor(0, 255, 0, 0);
 	rgbled_7.show();
 }
 
@@ -59,27 +61,59 @@ void setup() {
 }
 
 void loop() {
-	if (state == Init) {
-		if (buttonEdge() == ButtonReleased) {
-			state = Following;
-			motorRL(100, 200);
-			rgbled_7.setColor(0, 255, 0, 0);
-			rgbled_7.show();
-		}
+	int line = linefollower_2.readSensors();
+	int dist = ultrasonic_3.distanceCm();
+
+	if (buttonEdge() == ButtonPressed) {
+		doInit();
 	}
-	if (state == Following) {
-		if (buttonEdge() == ButtonPressed) {
+
+	if (false) {
+		if (dist < 5) {
 			state = Collision;
-			motorRL(0, 0);
-			rgbled_7.setColor(0, 0, 0, 0);
-			rgbled_7.show();
+			collisionTime = millis();
+			motorRL(-80, -90);
 		}
 	}
+
 	if (state == Collision) {
-		if (buttonEdge() == ButtonPressed) {
-			state = Init;
+		if (millis() > collisionTime + 3000) {
+			doInit();
 		}
-		
+	}
+	if (state == Init) {
+		if (line != 0) {
+			motorRL(150, 150);
+			state = Following;
+		}
+	}
+	if (state == Reverse && line == 0) {
+		rgbled_7.setColor(0, 255, 128, 0);
+		motorRL(-85, -85);
+	}
+	if (state == Following || (state == Reverse && line != 0)) {
+		if (line == 0) {
+			rgbled_7.setColor(0, 255, 128, 0);
+			motorRL(-85, -85);
+			state = Reverse;
+		}
+		if (line == 1) {
+			motorRL(+80, -80);
+			rgbled_7.setColor(1, 255, 0, 0);
+			rgbled_7.setColor(2, 200, 200, 0);
+			rgbled_7.show();
+		}
+		if (line == 2) {
+			motorRL(-80, +80);
+			rgbled_7.setColor(1, 200, 200, 0);
+			rgbled_7.setColor(2, 255, 0, 0);
+			rgbled_7.show();
+		}
+		if (line == 3) {
+			motorRL(150, 150);
+			rgbled_7.setColor(0, 150, 150, 0);
+			rgbled_7.show();
+		}
 	}
 }
 
