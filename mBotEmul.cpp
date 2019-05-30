@@ -26,6 +26,47 @@ public:
 	void move(double dt, bool button);
 };
 
+
+/**
+ * Speed measurement results:
+ * (L, R engine settings): time - description
+	(-100, 100): 28.6 - 10x turn 360 degree
+	(0, 100) 27.8 - 5x turn 360 deg (diameter about 10 cm => traveled about 5x3x10 = 150 cm)
+	(-255,255): 9.6 - 10x turn 360 degree
+	(100,100): 8.5 - travel 130 cm
+	(255,255): 6.7 - travel 260 cm
+	(-255,-255): 6.6 - travel 260 cm
+	(100,200): 29.0 - 5x turn 360 deg (diameter about 50 cm => traveled about 5x3x50 = 750 cm)
+ * */
+
+/**
+ 	* Engine / speed table:
+ 	* engine : distance : time : speed, speed / engine
+	50 : 1.5 : 27.8 - 0.054, 0.00108
+	100: 1.3 : 8.5 - 0.153, 0.00153
+	255: 2.6 : 6.7 - 0.388, 0.00152
+	-255: 2.6: 6.6 - 0.394, 0.00154
+	150: 29.0: 7.5 - 0.259, 0.00173
+ ---
+ 	average speed / engine = 0.00148
+*/
+
+/**
+  * Engine / turn table:
+  * engine: turns: time: turn period, turn period * engine
+  200: 10: 28.6: 2.86, 572
+  510: 10: 9.6: 0.96, 490
+  100: 5: 27.8:  5.56, 556
+  100: 5: 29: 5.8, 580
+ ---
+  average turn period * engine = 550
+  turn speed = 2*pi / turn period
+  turn period = 2*pi / turn speed
+
+  engine / turn speed = 550 / (2*pi)
+  engine / turn speed = (2*pi) / 550
+*/
+
 void MBot::move(double dt, bool button) {
 	buttonState = button;
 
@@ -57,8 +98,9 @@ void MBot::move(double dt, bool button) {
 		speedR = std::max(speedR, 0.0);
 	}
 
-	double speed = (speedR + speedL) * 0.001;
-	double turnCoef = 0.01;
+	double speedCoef = 0.00148;
+	double speed = (speedR + speedL) * speedCoef;
+	double turnCoef = 0.011;
 	double headingChange = (speedR - speedL) * turnCoef;
 
 	heading += headingChange * dt;
@@ -132,5 +174,5 @@ void MeRGBLed::show() {
 }
 
 int analogRead(int pin) {
-	return bot.buttonState ? 20 : 0;
+	return bot.buttonState ? 0 : 20;
 }
