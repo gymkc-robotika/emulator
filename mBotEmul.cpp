@@ -120,9 +120,9 @@ MBot bot = MBot(&motor_9, &motor_10);
 int MeLineFollower::readSensors() {
 	RoomColor colorR = bot.sensorLeft;
 	RoomColor colorL = bot.sensorRight;
-	int ret = 0;
-	if (colorR == RoomBlack) ret += 1;
-	if (colorL == RoomBlack) ret += 2;
+	int ret = 3;
+	if (colorR == RoomBlack) ret -= 1;
+	if (colorL == RoomBlack) ret -= 2;
 	return ret;
 
 }
