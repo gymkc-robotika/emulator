@@ -175,6 +175,33 @@ long millis() {
 	return simulatedTime;
 }
 
+template <class Data>
+class DataMemory {
+	static const int maxCount = 1000;
+public:
+	Data data[maxCount];
+	int count = 0;
+
+private:
+	void shift() {
+		for (int i = 1; i <count; i++) {
+			data[i - 1] = data[i];
+		}
+		count --;
+	}
+
+public:
+	void add(const Data &d) {
+		if (count >= maxCount) {
+			shift();
+		}
+		data[count ++] = d;
+	}
+
+};
+
+static DataMemory<MBotPos> botTrail;
+
 void UpdateBot() {
 	LONG now = GetTickCount();
 	LONG deltaT = now - lastTime;
@@ -191,6 +218,8 @@ void UpdateBot() {
 		long ms = std::min(toSimulateMs, 20L);
 
 		visual = emulatorLoop(ms * 0.001, buttonM);
+		botTrail.add(visual);
+
 		simulatedTime += ms;
 		toSimulateMs -= ms;
 	}
@@ -235,18 +264,22 @@ void DrawBot(HWND hwnd, HDC hdc) {
 
 	DeleteObject(hbmMem);
 
+
+	auto drawLineOnBot = [=](MBotPos begPos, MBotPos endPos, COLORREF color, double bx, double by, double ex, double ey, int lineWidth = 3) {
+			HPEN hLinePen = CreatePen(PS_SOLID, lineWidth, color);
+			HPEN hPenOld = (HPEN) SelectObject(hdcMemory, hLinePen);
+
+			POINT pos = ScreenPos(begPos.local(bx, by));
+			POINT posE = ScreenPos(endPos.local(ex, ey));
+			MoveToEx(hdcMemory, pos.x, pos.y, NULL);
+			LineTo(hdcMemory, posE.x, posE.y);
+
+			SelectObject(hdcMemory, hPenOld);
+			DeleteObject(hLinePen);
+	};
+
 	auto drawLine = [=](COLORREF color, double bx, double by, double ex, double ey, int lineWidth = 3) {
-		// Draw a red line
-		HPEN hLinePen = CreatePen(PS_SOLID, lineWidth, color);
-		HPEN hPenOld = (HPEN) SelectObject(hdcMemory, hLinePen);
-
-		POINT pos = ScreenPos(visual.local(bx, by));
-		POINT posE = ScreenPos(visual.local(ex, ey));
-		MoveToEx(hdcMemory, pos.x, pos.y, NULL);
-		LineTo(hdcMemory, posE.x, posE.y);
-
-		SelectObject(hdcMemory, hPenOld);
-		DeleteObject(hLinePen);
+			drawLineOnBot(visual, visual, color, bx, by, ex, ey, lineWidth);
 	};
 
 
@@ -257,6 +290,15 @@ void DrawBot(HWND hwnd, HDC hdc) {
 	drawLine(0, MBotConfig::collisionBL, MBotConfig::collisionBack, MBotConfig::collisionBR, MBotConfig::collisionBack, 1);
 	drawLine(0, MBotConfig::collisionL, MBotConfig::collisionFront, MBotConfig::collisionBL, MBotConfig::collisionBack, 1);
 	drawLine(0, MBotConfig::collisionR, MBotConfig::collisionFront, MBotConfig::collisionBR, MBotConfig::collisionBack, 1);
+
+
+	COLORREF trailColor = RGB(128,255,0);
+	for (int i = 1; i < botTrail.count; i++) {
+		auto prev = botTrail.data[i - 1];
+		auto next = botTrail.data[i];
+		drawLineOnBot(prev, next, trailColor, 0, MBotConfig::lineSensorPosFront, 0, MBotConfig::lineSensorPosFront, 1);
+
+	}
 
 	double ledY = 0.5;
 	double ledX = 0.4;
