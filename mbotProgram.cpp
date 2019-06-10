@@ -103,6 +103,8 @@ long collisionTime;
 bool buttonState = false;
 
 double turn = 0;
+double speed = 0;
+
 int lastMillis = millis();
 
 Memory turnMemory;
@@ -143,6 +145,7 @@ void loop() {
 	lastMillis = now;
 	
 	double deltaTurn = deltaT * 5.0;
+	double deltaSpeed = deltaT * 3.0;
 	
 	
 	int line = linefollower_2.readSensors();
@@ -172,6 +175,16 @@ void loop() {
 		}
 	}
 
+	if (state == Reverse) {
+		// when reversing wait until both a black
+		if (line == 0) {
+			rgbled_7.setColor(0, 255, 128, 0);
+			motorRL(0, 0);
+			turn = 0;
+			speed = 70;
+			state = Following;
+		}
+	}
 
 	if (state == Following) {
 		double avgTurn = turnMemory.average(now, 1000);
@@ -179,10 +192,14 @@ void loop() {
 			rgbled_7.setColor(0, 255, 128, 0);
 			motorRL(-85, -85);
 			turn = 0;
+			speed = -80;
+			state = Reverse;
 		} else {
 			if (line == 2) {
 				turn = avgTurn + deltaTurn;
 				if (turn > 512) turn = 512;
+				speed -= deltaSpeed;
+				if (speed < 0) speed = 0;
 				rgbled_7.setColor(1, 255, 0, 0);
 				rgbled_7.setColor(2, 200, 200, 0);
 				rgbled_7.show();
@@ -190,20 +207,25 @@ void loop() {
 			if (line == 1) {
 				turn = avgTurn - deltaTurn;
 				if (turn < -512) turn = -512;
+				speed -= deltaSpeed;
+				if (speed < 0) speed = 0;
 				rgbled_7.setColor(1, 200, 200, 0);
 				rgbled_7.setColor(2, 255, 0, 0);
 				rgbled_7.show();
 			}
 			if (line == 0) {
+				speed += deltaSpeed;
+				if (speed < 70) speed = 70;
+				if (speed > 200) speed = 200;
 				turn = avgTurn;
 				rgbled_7.setColor(0, 150, 150, 0);
 				rgbled_7.show();
 			}
 
 			turnMemory.add(turn, now);
-			
-			int motorR = 100 + turn;
-			int motorL = 100 - turn;
+
+			int motorR = speed + turn;
+			int motorL = speed - turn;
 			motorRL(motorR, motorL);
 		}	
 	}
