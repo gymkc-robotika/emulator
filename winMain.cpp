@@ -239,6 +239,9 @@ COLORREF DisplaySensor(RoomColor roomColor) {
 	}
 }
 
+COLORREF SensorTrailColor(RoomColor roomColor) {
+	return DisplaySensor(roomColor);
+}
 void DrawBot(HWND hwnd, HDC hdc) {
 	// based on https://docs.microsoft.com/en-us/previous-versions/ms969905(v=msdn.10)
 	RECT rc;
@@ -292,12 +295,16 @@ void DrawBot(HWND hwnd, HDC hdc) {
 	drawLine(0, MBotConfig::collisionR, MBotConfig::collisionFront, MBotConfig::collisionBR, MBotConfig::collisionBack, 1);
 
 
-	COLORREF trailColor = RGB(128,255,0);
 	for (int i = 1; i < botTrail.count; i++) {
 		auto prev = botTrail.data[i - 1];
 		auto next = botTrail.data[i];
-		drawLineOnBot(prev, next, trailColor, 0, MBotConfig::lineSensorPosFront, 0, MBotConfig::lineSensorPosFront, 1);
 
+
+		double increaseDist = 4.0;
+		drawLineOnBot(prev, next, SensorTrailColor(next.sensorLeft), MBotConfig::lineSensorPosL * increaseDist, MBotConfig::lineSensorPosFront, MBotConfig::lineSensorPosL * increaseDist, MBotConfig::lineSensorPosFront, 1);
+		drawLineOnBot(prev, next, SensorTrailColor(next.sensorRight), MBotConfig::lineSensorPosR * increaseDist, MBotConfig::lineSensorPosFront, MBotConfig::lineSensorPosR * increaseDist, MBotConfig::lineSensorPosFront, 1);
+
+		//drawLineOnBot(prev, next, trailColor, 0, MBotConfig::lineSensorPosFront, 0, MBotConfig::lineSensorPosFront, 1);
 	}
 
 	double ledY = 0.5;
