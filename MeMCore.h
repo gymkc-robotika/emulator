@@ -5,6 +5,8 @@
 #include <random>
 
 #define M1 0
+#define INPUT 0
+#define A7 (0xa000 + 7)
 
 class MeDCMotor {
 	double randomFactor = 1;
@@ -70,7 +72,6 @@ class MeUltrasonicSensor {
 
 	int distanceCm();
 };
-#define A7 0xa000 + 7
 
 static void pinMode(int pin, int mode) {
 }

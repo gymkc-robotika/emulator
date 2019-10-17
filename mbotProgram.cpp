@@ -1,4 +1,5 @@
-#include <cfloat>
+#include <float.h>
+
 #include "Arduino.h"
 #include "Wire.h"
 #include "SoftwareSerial.h"
@@ -6,7 +7,7 @@
 #include "MeMCore.h"
 
 class Memory {
-	static constexpr int maxSize = 100;
+	static const int maxSize = 64;
 
 	double values[maxSize];
 	long time[maxSize];
@@ -27,7 +28,7 @@ class Memory {
 		return count;
 	}
 
-public:
+	public:
 	void add(double value, long now) {
 		if (count >= maxSize) {
 			shift();
@@ -47,20 +48,20 @@ public:
 		return sum / (count - index);
 	}
 
-	double max(long now, long age) {
+	double maximum(long now, long age) {
 		int index = findTime(now - age);
 		double result = -DBL_MAX;
 		for (int i = index; i < count; i++) {
-			result = std::max(result, values[i]);
+			result = max(result, values[i]);
 		}
 		return result;
 	}
 
-	double min(long now, long age) {
+	double minimum(long now, long age) {
 		int index = findTime(now - age);
 		double result = DBL_MAX;
 		for (int i = index; i < count; i++) {
-			result = std::min(result, values[i]);
+			result = min(result, values[i]);
 		}
 		return result;
 	}
@@ -82,8 +83,8 @@ MeUltrasonicSensor ultrasonic_3(3);
 void motorRL(int l, int r) {
 	int maxMotor = +255;
 	int minMotor = -255;
-	l = std::max(minMotor, std::min(l, maxMotor));
-	r = std::max(minMotor, std::min(r, maxMotor));
+	l = max(minMotor, min(l, maxMotor));
+	r = max(minMotor, min(r, maxMotor));
 	motor_9.run((9) == M1 ? -(l) : (l));
 	motor_10.run((10) == M1 ? -(r) : (r));
 }
@@ -114,16 +115,16 @@ Memory turnMemory;
 #define ButtonReleased 2
 
 int buttonEdge() {
-  int ret = ButtonNone;
-  bool button = analogRead(A7) < 10;
-  if (button && !buttonState) {
-    ret = ButtonPressed;
-  }
-  if (!button && buttonState) {
-    ret = ButtonReleased;
-  }
-  buttonState = button;
-  return ret;
+	int ret = ButtonNone;
+	bool button = analogRead(A7) < 10;
+	if (button && !buttonState) {
+		ret = ButtonPressed;
+	}
+	if (!button && buttonState) {
+		ret = ButtonReleased;
+	}
+	buttonState = button;
+	return ret;
 }
 
 
@@ -143,11 +144,11 @@ void loop() {
 	int now = millis();
 	int deltaT = now - lastMillis;
 	lastMillis = now;
-	
+
 	double deltaTurn = deltaT * 5.0;
 	double deltaSpeed = deltaT * 3.0;
-	
-	
+
+
 	int line = linefollower_2.readSensors();
 	int dist = ultrasonic_3.distanceCm();
 
@@ -227,7 +228,7 @@ void loop() {
 			int motorR = speed + turn;
 			int motorL = speed - turn;
 			motorRL(motorR, motorL);
-		}	
+		}
 	}
 }
 
